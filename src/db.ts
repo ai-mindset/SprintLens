@@ -1,4 +1,5 @@
 import { DatabaseSync } from "node:sqlite";
+import { getLoadablePath } from "sqlite-vec";
 import { config } from "../src/config.ts";
 
 export type DB = DatabaseSync;
@@ -12,6 +13,20 @@ function vecExtPath(): string {
     ? "dylib"
     : "so";
   return `data/vec0.${ext}`;
+}
+
+function vecLoadPath(): string {
+  try {
+    if (Deno.statSync(vecExtPath()).isFile) return vecExtPath();
+  } catch {
+    // fall through to package-provided extension path
+  }
+  return getLoadablePath();
+}
+
+function normalizeLoadExtensionPath(path: string): string {
+  // node:sqlite appends the platform suffix automatically.
+  return path.replace(/\.(so|dylib|dll)$/i, "");
 }
 
 const SCHEMA = `
@@ -49,9 +64,9 @@ CREATE TABLE IF NOT EXISTS ai_analysis (
 );
 `;
 
-export function openDB(path = "data/sprintlens.db"): DB {
+export function openDB(path = config.dbPath): DB {
   const db = new DatabaseSync(path, { allowExtension: true });
-  db.loadExtension(vecExtPath());
+  db.loadExtension(normalizeLoadExtensionPath(vecLoadPath()));
 
   for (const stmt of SCHEMA.split(";").filter((s) => s.trim())) {
     db.prepare(stmt).run();

@@ -465,7 +465,7 @@ const ACTION_NOTES = [
 // while others appear once and are "done" in subsequent sprints.
 const carriedActions: string[] = [];
 
-function generateRetro(sprintNum: number, week: WeekState): string {
+function generateRetro(_sprintNum: number, _week: WeekState): string {
   const lines: string[] = [];
   const header =
     "note_id\tauthor_id\tauthor\ttext\tcolumn_id\tcolumn\trank\tstack\n";
