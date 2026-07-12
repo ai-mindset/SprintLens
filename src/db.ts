@@ -24,6 +24,11 @@ function vecLoadPath(): string {
   return getLoadablePath();
 }
 
+function normalizeLoadExtensionPath(path: string): string {
+  // node:sqlite appends the platform suffix automatically.
+  return path.replace(/\.(so|dylib|dll)$/i, "");
+}
+
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS retro_item (
   note_id     TEXT PRIMARY KEY,
@@ -61,7 +66,7 @@ CREATE TABLE IF NOT EXISTS ai_analysis (
 
 export function openDB(path = config.dbPath): DB {
   const db = new DatabaseSync(path, { allowExtension: true });
-  db.loadExtension(vecLoadPath().replace(/\.(so|dylib|dll)$/i, ""));
+  db.loadExtension(normalizeLoadExtensionPath(vecLoadPath()));
 
   for (const stmt of SCHEMA.split(";").filter((s) => s.trim())) {
     db.prepare(stmt).run();
