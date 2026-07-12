@@ -1,5 +1,4 @@
 import { assertEquals } from "@std/assert";
-import { DatabaseSync } from "node:sqlite";
 import { loadRetros, loadSlack } from "../src/loader.ts";
 import { openDB } from "../src/db.ts";
 
