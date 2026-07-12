@@ -1,0 +1,26 @@
+{
+  "tasks": {
+    "setup": "deno run --allow-all tasks/setup.ts",
+    "scrape": "deno run --allow-all tasks/scrape_slack.ts",
+    "load": "deno run --allow-all src/loader.ts",
+    "analyse": "deno run --allow-all src/analyse.ts",
+    "app": "deno desktop --output=sprintlens src/main.ts",
+    "generate": "deno run --allow-all tasks/generate_synthetic.ts",
+    "pipeline": "deno task setup && deno task load && deno task analyse && deno task app"
+  },
+  "nodeModulesDir": "auto",
+  "imports": {
+    "@std/path": "jsr:@std/path",
+    "@std/assert": "jsr:@std/assert",
+    "@std/fs": "jsr:@std/fs",
+    "sqlite-vec": "npm:sqlite-vec",
+    "zod": "npm:zod",
+    "zod-to-json-schema": "npm:zod-to-json-schema",
+    "@observablehq/plot": "npm:@observablehq/plot"
+  },
+
+  "allowScripts": {
+    "allow": ["npm:sqlite-vec"],
+    "deny": ["npm:better-sqlite3@12.11.1"]
+  }
+}

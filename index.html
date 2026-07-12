@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SprintLens</title>
+  <script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #f8f9fa; color: #222; padding: 2rem; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .subtitle { color: #666; margin-bottom: 2rem; font-size: 0.95rem; }
+    .chart-card { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .chart-card h2 { font-size: 1.1rem; margin-bottom: 1rem; }
+    .chart-card .plot { overflow-x: auto; }
+    .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; text-align: center; }
+    .stat .value { font-size: 1.8rem; font-weight: bold; }
+    .stat .label { font-size: 0.85rem; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>SprintLens</h1>
+  <p class="subtitle">Sprint ceremony effectiveness — backed by data</p>
+
+  <div class="summary" id="summary"></div>
+
+  <div class="chart-card">
+    <h2>Sentiment over time</h2>
+    <div class="plot" id="sentiment-chart"></div>
+  </div>
+
+  <div class="chart-card">
+    <h2>Recurring themes in updates</h2>
+    <div class="plot" id="themes-chart"></div>
+  </div>
+
+  <div class="chart-card">
+    <h2>Recurring blockers</h2>
+    <div class="plot" id="blockers-chart"></div>
+  </div>
+
+  <div class="chart-card">
+    <h2>Action item follow-through</h2>
+    <div class="plot" id="actions-chart"></div>
+  </div>
+
+  <script type="module">
+    const colours = {
+      positive: "#2a9d8f",
+      neutral: "#8d99ae",
+      negative: "#e76f51",
+      done: "#2a9d8f",
+      partial: "#e9c46a",
+      not_done: "#e76f51",
+      dropped: "#aaaaaa",
+    };
+
+    async function fetchJSON(path) {
+      const res = await fetch(path);
+      return res.json();
+    }
+
+    // --- Summary stats ---
+
+    async function renderSummary() {
+      const [sentiment, actions] = await Promise.all([
+        fetchJSON("/api/sentiment-trends"),
+        fetchJSON("/api/action-status"),
+      ]);
+
+      const total = sentiment.length;
+      const posPct = total ? Math.round(sentiment.filter(s => s.sentiment === "positive").length / total * 100) : 0;
+      const negPct = total ? Math.round(sentiment.filter(s => s.sentiment === "negative").length / total * 100) : 0;
+      const donePct = actions.length ? Math.round(actions.filter(a => a.action_status === "done").length / actions.length * 100) : 0;
+      const notDonePct = actions.length ? Math.round(actions.filter(a => a.action_status === "not_done").length / actions.length * 100) : 0;
+
+      const stats = [
+        { label: "Updates analysed", value: total },
+        { label: "Positive sentiment", value: `${posPct}%` },
+        { label: "Negative sentiment", value: `${negPct}%` },
+        { label: "Action items tracked", value: actions.length },
+        { label: "Actions completed", value: `${donePct}%` },
+        { label: "Actions not followed through", value: `${notDonePct}%` },
+      ];
+
+      document.getElementById("summary").innerHTML = stats.map(s =>
+        `<div class="stat"><div class="value">${s.value}</div><div class="label">${s.label}</div></div>`
+      ).join("");
+    }
+
+    // --- Sentiment chart ---
+
+    async function renderSentiment() {
+      const data = await fetchJSON("/api/sentiment-trends");
+      const plot = Plot.plot({
+        marginLeft: 50,
+        marginBottom: 60,
+        marks: [
+          Plot.barY(
+            data,
+            Plot.groupX(
+              { y: "count" },
+              { x: "thread_ts", fill: "sentiment", sort: { x: "data" } },
+            ),
+          ),
+        ],
+        color: { range: [colours.negative, colours.neutral, colours.positive] },
+        x: { label: "Update thread", tickRotate: -45 },
+        y: { label: "Count" },
+      });
+      document.getElementById("sentiment-chart").appendChild(plot);
+    }
+
+    // --- Themes chart ---
+
+    async function renderThemes() {
+      const data = await fetchJSON("/api/themes");
+      const plot = Plot.plot({
+        marginLeft: 120,
+        marks: [
+          Plot.barX(data, { x: "count", y: "theme", fill: "#457b9d", sort: { y: "-x" } }),
+        ],
+        x: { label: "Frequency" },
+        y: { label: null },
+      });
+      document.getElementById("themes-chart").appendChild(plot);
+    }
+
+    // --- Blockers chart ---
+
+    async function renderBlockers() {
+      const data = await fetchJSON("/api/blockers");
+      const plot = Plot.plot({
+        marginLeft: 120,
+        marks: [
+          Plot.barX(data, { x: "count", y: "blocker", fill: "#e76f51", sort: { y: "-x" } }),
+        ],
+        x: { label: "Frequency" },
+        y: { label: null },
+      });
+      document.getElementById("blockers-chart").appendChild(plot);
+    }
+
+    // --- Action status chart ---
+
+    async function renderActions() {
+      const data = await fetchJSON("/api/action-status");
+      const counts = data.reduce((acc, d) => {
+        acc[d.action_status] = (acc[d.action_status] ?? 0) + 1;
+        return acc;
+      }, {});
+
+      const chartData = Object.entries(counts).map(([status, count]) => ({ status, count }));
+
+      const plot = Plot.plot({
+        marks: [
+          Plot.barY(chartData, {
+            x: "status",
+            y: "count",
+            fill: d => colours[d.status] ?? "#999",
+          }),
+          Plot.text(chartData, {
+            x: "status",
+            y: "count",
+            dx: 0,
+            dy: -6,
+            text: d => d.count,
+          }),
+        ],
+        x: { label: "Status" },
+        y: { label: "Count" },
+      });
+      document.getElementById("actions-chart").appendChild(plot);
+    }
+
+    // --- Render all ---
+
+    await renderSummary();
+    await renderSentiment();
+    await renderThemes();
+    await renderBlockers();
+    await renderActions();
+  </script>
+</body>
+</html>
