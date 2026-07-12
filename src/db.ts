@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS ai_analysis (
 );
 `;
 
-export function openDB(path = "data/sprintlens.db"): DB {
+export function openDB(path = config.dbPath): DB {
   const db = new DatabaseSync(path, { allowExtension: true });
   db.loadExtension(vecExtPath());
 
