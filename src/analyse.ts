@@ -2,17 +2,36 @@ import { z } from "zod";
 import { type DB, openDB } from "./db.ts";
 import { type AiConfig, chat, embed } from "./ai.ts";
 
-// --- Vector helpers ---
-// sqlite-vec accepts vectors in several formats. A JSON array string is the
-// simplest and most portable, so we normalise both inserts and MATCH queries
-// to use it.
+// --- Signal handling ---
+let interrupted = false;
+function onInterrupt() {
+  console.log("\nInterrupt received. Finishing current item, then stopping...");
+  interrupted = true;
+}
+Deno.addSignalListener("SIGINT", onInterrupt);
+
+// --- Helpers ---
 function vecJSON(vec: number[]): string {
   return JSON.stringify(vec);
 }
 
-// --- Schemas ---
-// These schemas are intentionally strict so bad model output fails loudly.
+function begin(db: DB) {
+  db.prepare("BEGIN").run();
+}
 
+function commit(db: DB) {
+  db.prepare("COMMIT").run();
+}
+
+function rollback(db: DB) {
+  try {
+    db.prepare("ROLLBACK").run();
+  } catch {
+    // Ignore rollback errors.
+  }
+}
+
+// --- Schemas ---
 const slackAnalysisSchema = z.object({
   sentiment: z.enum(["positive", "neutral", "negative"]),
   themes: z.array(z.string()),
@@ -31,13 +50,12 @@ const actionVerdictSchema = z.object({
   confidence: z.enum(["high", "medium", "low"]),
 });
 
-// --- Structured chat with explicit fallback logging ---
+// --- Structured chat ---
 async function structuredChat(
   messages: { role: string; content: string }[],
   schema: z.ZodType,
   config?: AiConfig,
 ) {
-  // Add an explicit JSON format reminder to the last user message.
   const last = messages.at(-1);
   if (last && last.role === "user") {
     last.content +=
@@ -59,16 +77,10 @@ async function structuredChat(
 }
 
 // --- Slack analysis ---
-
 async function analyseSlack(db: DB, config?: AiConfig) {
   const rows = db.prepare(`
     SELECT id, author, text FROM slack_update
-    WHERE CAST(id AS TEXT) NOT IN (
-      SELECT source_id FROM ai_analysis WHERE source = 'slack'
-    )
   `).all() as { id: number; author: string; text: string }[];
-
-  console.log(`Analysing ${rows.length} Slack updates...`);
 
   const insertAnalysis = db.prepare(
     `INSERT INTO ai_analysis (source, source_id, sentiment, themes, blockers)
@@ -77,8 +89,24 @@ async function analyseSlack(db: DB, config?: AiConfig) {
   const insertEmbedding = db.prepare(
     `INSERT INTO embedding (source, source_id, embedding) VALUES ('slack', ?, ?)`,
   );
+  const exists = db.prepare(
+    `SELECT 1 FROM ai_analysis WHERE source = 'slack' AND source_id = ? LIMIT 1`,
+  );
+
+  console.log(`Analysing Slack updates...`);
+
+  let skipped = 0;
+  let processed = 0;
 
   for (const row of rows) {
+    if (interrupted) break;
+
+    const alreadyDone = exists.get(String(row.id));
+    if (alreadyDone) {
+      skipped++;
+      continue;
+    }
+
     const result = await structuredChat(
       [{
         role: "user",
@@ -103,35 +131,38 @@ JSON schema:
       config,
     ) as z.infer<typeof slackAnalysisSchema>;
 
-    insertAnalysis.run(
-      String(row.id),
-      result.sentiment,
-      JSON.stringify(result.themes),
-      JSON.stringify(result.blockers),
-    );
-
     const vec = await embed(row.text, config);
-    insertEmbedding.run(String(row.id), vecJSON(vec));
 
-    console.log(
-      `  [slack:${row.id}] ${result.sentiment} — themes: ${
-        result.themes.join(", ") || "none"
-      }`,
-    );
+    try {
+      begin(db);
+      insertAnalysis.run(
+        String(row.id),
+        result.sentiment,
+        JSON.stringify(result.themes),
+        JSON.stringify(result.blockers),
+      );
+      insertEmbedding.run(String(row.id), vecJSON(vec));
+      commit(db);
+      processed++;
+      console.log(
+        `  [slack:${row.id}] ${result.sentiment} — themes: ${
+          result.themes.join(", ") || "none"
+        }`,
+      );
+    } catch (err) {
+      rollback(db);
+      console.error(`  [slack:${row.id}] failed to save:`, err);
+    }
   }
+
+  console.log(`Slack: ${processed} processed, ${skipped} skipped.`);
 }
 
 // --- Retro classification ---
-
 async function analyseRetros(db: DB, config?: AiConfig) {
   const rows = db.prepare(`
     SELECT note_id, text, "column" AS col FROM retro_item
-    WHERE note_id NOT IN (
-      SELECT source_id FROM ai_analysis WHERE source = 'retro'
-    )
   `).all() as { note_id: string; text: string; col: string }[];
-
-  console.log(`\nAnalysing ${rows.length} retro items...`);
 
   const insertAnalysis = db.prepare(
     `INSERT INTO ai_analysis (source, source_id, action_text, action_status)
@@ -140,8 +171,24 @@ async function analyseRetros(db: DB, config?: AiConfig) {
   const insertEmbedding = db.prepare(
     `INSERT INTO embedding (source, source_id, embedding) VALUES ('retro_action', ?, ?)`,
   );
+  const exists = db.prepare(
+    `SELECT 1 FROM ai_analysis WHERE source = 'retro' AND source_id = ? LIMIT 1`,
+  );
+
+  console.log(`\nAnalysing retro items...`);
+
+  let skipped = 0;
+  let processed = 0;
 
   for (const row of rows) {
+    if (interrupted) break;
+
+    const alreadyDone = exists.get(row.note_id);
+    if (alreadyDone) {
+      skipped++;
+      continue;
+    }
+
     const result = await structuredChat(
       [{
         role: "user",
@@ -167,24 +214,32 @@ JSON schema:
     ) as z.infer<typeof retroItemSchema>;
 
     if (result.is_action_item && result.action_text) {
-      insertAnalysis.run(row.note_id, result.action_text);
-
-      const vec = await embed(result.action_text, config);
-      insertEmbedding.run(row.note_id, vecJSON(vec));
-
-      console.log(
-        `  [retro:${row.note_id}] action item → "${
-          result.action_text.slice(0, 60)
-        }"`,
-      );
+      try {
+        const vec = await embed(result.action_text, config);
+        begin(db);
+        insertAnalysis.run(row.note_id, result.action_text);
+        insertEmbedding.run(row.note_id, vecJSON(vec));
+        commit(db);
+        processed++;
+        console.log(
+          `  [retro:${row.note_id}] action item → "${
+            result.action_text.slice(0, 60)
+          }"`,
+        );
+      } catch (err) {
+        rollback(db);
+        console.error(`  [retro:${row.note_id}] failed to save:`, err);
+      }
     } else {
+      processed++;
       console.log(`  [retro:${row.note_id}] ${result.category}`);
     }
   }
+
+  console.log(`Retro: ${processed} processed, ${skipped} skipped.`);
 }
 
 // --- Action item tracking ---
-
 async function trackActionItems(db: DB, config?: AiConfig) {
   const pending = db.prepare(`
     SELECT a.source_id, a.action_text, r.retro_name
@@ -205,6 +260,8 @@ async function trackActionItems(db: DB, config?: AiConfig) {
   );
 
   for (const item of pending) {
+    if (interrupted) break;
+
     const actionVecRow = db.prepare(
       `SELECT embedding FROM embedding WHERE source = 'retro_action' AND source_id = ?`,
     ).get(item.source_id) as { embedding: string } | undefined;
@@ -214,10 +271,6 @@ async function trackActionItems(db: DB, config?: AiConfig) {
       continue;
     }
 
-    // Semantic search for relevant Slack updates.
-    // The inner query performs the KNN lookup; the outer query joins to the
-    // slack_update table. sqlite-vec requires the k = N constraint to be
-    // visible directly on the virtual table, which is why we use a subquery.
     const slackEvidence = db.prepare(`
       SELECT s.author, s.text, s.ts, e.distance
       FROM (
@@ -236,7 +289,6 @@ async function trackActionItems(db: DB, config?: AiConfig) {
       distance: number;
     }[];
 
-    // Semantic search for related retro notes (later boards or same topic).
     const retroEvidence = db.prepare(`
       SELECT r.retro_name, r.text, r."column" AS col, e.distance
       FROM (
@@ -308,11 +360,16 @@ JSON schema:
 }
 
 // --- Main ---
-
 if (import.meta.main) {
   const db = openDB();
-  await analyseSlack(db);
-  await analyseRetros(db);
-  await trackActionItems(db);
+
+  try {
+    await analyseSlack(db);
+    await analyseRetros(db);
+    await trackActionItems(db);
+  } finally {
+    Deno.removeSignalListener("SIGINT", onInterrupt);
+  }
+
   console.log("\nAnalysis complete.");
 }
