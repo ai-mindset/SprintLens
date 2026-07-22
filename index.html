@@ -14,14 +14,14 @@
     .stat-card .value { font-size: 2rem; font-weight: 700; color: var(--primary); }
     .stat-card .label { font-size: 0.85rem; color: var(--pico-muted-color); }
     .legend { display: flex; gap: 1rem; align-items: center; justify-content: center; margin-top: 0.5rem; flex-wrap: wrap; }
-    .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; }
-    .legend-swatch { width: 14px; height: 14px; border-radius: 3px; }
+    .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 17px; }
+    .legend-swatch { width: 16px; height: 16px; border-radius: 3px; }
     .clickable-bar { cursor: pointer; }
     .clickable-bar:hover { opacity: 0.8; }
     #detail-panel { margin-top: 2rem; }
     #detail-panel article { margin-bottom: 1rem; }
     .quote { font-style: italic; border-left: 3px solid var(--primary); padding-left: 1rem; margin: 0.5rem 0; }
-    .tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 12px; font-size: 0.75rem; margin-right: 0.4rem; }
+    .tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 12px; font-size: 0.85rem; margin-right: 0.4rem; }
     .tag-positive { background: #e8f5f3; color: #1d7a6e; }
     .tag-negative { background: #fdecea; color: #c0392b; }
     .tag-neutral { background: #f0f0f0; color: #555; }
@@ -29,6 +29,12 @@
     .tag-partial { background: #fff4db; color: #b38600; }
     .tag-not_done { background: #fdecea; color: #c0392b; }
     .tag-dropped { background: #f0f0f0; color: #777; }
+
+    /* Plot typography overrides — maximise readability */
+    svg text { font-size: 15px !important; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif !important; }
+    svg .axis text { font-size: 14px !important; }
+    svg .axis label { font-size: 16px !important; font-weight: 600 !important; }
+    svg .grid line { stroke-opacity: 0.3; }
   </style>
 </head>
 <body>
@@ -62,15 +68,15 @@
     <section class="grid">
       <div>
         <article>
-          <h2>Recurring themes</h2>
-          <p class="pico-color-grey-500">Click a bar to see related updates.</p>
+          <h3>Recurring themes</h3>
+          <p>Click a bar to see related updates.</p>
           <div id="themes-chart"></div>
         </article>
       </div>
       <div>
         <article>
-          <h2>Recurring blockers</h2>
-          <p class="pico-color-grey-500">Click a bar to see related updates.</p>
+          <h3>Recurring blockers</h3>
+          <p>Click a bar to see related updates.</p>
           <div id="blockers-chart"></div>
         </article>
       </div>
@@ -79,14 +85,16 @@
     <section class="grid">
       <div>
         <article>
-          <h2>Action item follow-through</h2>
+          <h3>Action item follow-through</h3>
           <div id="actions-chart"></div>
+          <div class="legend" id="actions-legend"></div>
         </article>
       </div>
       <div>
         <article>
-          <h2>Action follow-through by sprint</h2>
+          <h3>Action follow-through by sprint</h3>
           <div id="actions-sprint-chart"></div>
+          <div class="legend" id="actions-sprint-legend"></div>
         </article>
       </div>
     </section>
@@ -110,12 +118,12 @@
   <script type="module">
     const colours = {
       positive: "#2a9d8f",
-      neutral: "#8d99ae",
-      negative: "#e76f51",
+      neutral: "#6B7280",
+      negative: "#DC2626",
       done: "#2a9d8f",
-      partial: "#e9c46a",
-      not_done: "#e76f51",
-      dropped: "#aaaaaa",
+      partial: "#D97706",
+      not_done: "#DC2626",
+      dropped: "#9CA3AF",
     };
 
     const statusLabels = {
@@ -211,9 +219,11 @@
       });
 
       const plot = Plot.plot({
-        marginBottom: 60,
-        x: { type: "band", label: "Date", tickRotate: -45 },
-        y: { label: "Count" },
+        style: "font-size: 15px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;",
+        marginBottom: 80,
+        marginLeft: 60,
+        x: { type: "band", label: "Date", tickRotate: -45, tickPadding: 8, tickSize: 8 },
+        y: { label: "Count", tickPadding: 10, tickSize: 8 },
         color: { range: [colours.negative, colours.neutral, colours.positive] },
         marks: [
           Plot.barY(
@@ -241,9 +251,11 @@
       const data = await fetchJSON("/api/sentiment-by-sprint");
 
       const plot = Plot.plot({
-        marginBottom: 60,
-        x: { type: "band", label: "Sprint" },
-        y: { label: "Count" },
+        style: "font-size: 15px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;",
+        marginBottom: 80,
+        marginLeft: 60,
+        x: { type: "band", label: "Sprint", tickPadding: 8, tickSize: 8 },
+        y: { label: "Count", tickPadding: 10, tickSize: 8 },
         color: { range: [colours.negative, colours.neutral, colours.positive] },
         marks: [
           Plot.barY(data, { x: "sprint", y: "count", fill: "sentiment" }),
@@ -260,12 +272,14 @@
       const raw = await fetchJSON("/api/sentiment-trends");
 
       const plot = Plot.plot({
-        marginLeft: 120,
+        style: "font-size: 15px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;",
+        marginLeft: 160,
+        marginBottom: 40,
+        x: { label: "Frequency", tickPadding: 10, tickSize: 8 },
+        y: { label: null },
         marks: [
           Plot.barX(data, { x: "count", y: "theme", fill: "#457b9d", sort: { y: "-x" }, className: "clickable-bar" }),
         ],
-        x: { label: "Frequency" },
-        y: { label: null },
       });
 
       document.getElementById("themes-chart").appendChild(plot);
@@ -289,12 +303,14 @@
       const raw = await fetchJSON("/api/sentiment-trends");
 
       const plot = Plot.plot({
-        marginLeft: 120,
-        marks: [
-          Plot.barX(data, { x: "count", y: "blocker", fill: "#e76f51", sort: { y: "-x" }, className: "clickable-bar" }),
-        ],
-        x: { label: "Frequency" },
+        style: "font-size: 15px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;",
+        marginLeft: 160,
+        marginBottom: 40,
+        x: { label: "Frequency", tickPadding: 10, tickSize: 8 },
         y: { label: null },
+        marks: [
+          Plot.barX(data, { x: "count", y: "blocker", fill: "var(--pico-color-grey-500)", sort: { y: "-x" }, className: "clickable-bar" }),
+        ],
       });
 
       document.getElementById("blockers-chart").appendChild(plot);
@@ -326,6 +342,11 @@
       const chartData = Object.entries(counts).map(([status, count]) => ({ status, count }));
 
       const plot = Plot.plot({
+        style: "font-size: 15px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;",
+        marginBottom: 40,
+        marginLeft: 60,
+        x: { label: "Status", tickFormat: d => statusLabels[d] ?? d, tickPadding: 10, tickSize: 8 },
+        y: { label: "Count", tickPadding: 10, tickSize: 8 },
         marks: [
           Plot.barY(chartData, {
             x: "status",
@@ -336,15 +357,21 @@
           Plot.text(chartData, {
             x: "status",
             y: "count",
-            dy: -6,
+            dy: -8,
             text: d => d.count,
           }),
         ],
-        x: { label: "Status", tickFormat: d => statusLabels[d] ?? d },
-        y: { label: "Count" },
       });
 
       document.getElementById("actions-chart").appendChild(plot);
+
+      const actionsLegend = document.getElementById("actions-legend");
+      actionsLegend.innerHTML = Object.entries(statusLabels).map(([status, label]) => `
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:${colours[status]}"></div>
+          <span>${label}</span>
+        </div>
+      `).join("");
 
       plot.querySelectorAll(".clickable-bar").forEach((bar, i) => {
         bar.addEventListener("click", () => {
@@ -364,9 +391,11 @@
       const data = await fetchJSON("/api/action-status-by-sprint");
 
       const plot = Plot.plot({
-        marginBottom: 60,
-        x: { type: "band", label: "Sprint" },
-        y: { label: "Count" },
+        style: "font-size: 15px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;",
+        marginBottom: 80,
+        marginLeft: 60,
+        x: { type: "band", label: "Sprint", tickPadding: 8, tickSize: 8 },
+        y: { label: "Count", tickPadding: 10, tickSize: 8 },
         color: { range: [colours.dropped, colours.done, colours.partial, colours.not_done] },
         marks: [
           Plot.barY(data, { x: "sprint", y: "count", fill: "status" }),
@@ -374,6 +403,14 @@
       });
 
       document.getElementById("actions-sprint-chart").appendChild(plot);
+
+      const actionsSprintLegend = document.getElementById("actions-sprint-legend");
+      actionsSprintLegend.innerHTML = Object.entries(statusLabels).map(([status, label]) => `
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:${colours[status]}"></div>
+          <span>${label}</span>
+        </div>
+      `).join("");
     }
 
     // --- Quotes ---
@@ -434,4 +471,3 @@
   </script>
 </body>
 </html>
-
