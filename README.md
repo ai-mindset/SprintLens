@@ -66,7 +66,7 @@ Any OpenAI-compatible API works - Mistral, Azure OpenAI, local Ollama, etc.
 deno task setup       # download sqlite-vec extension
 deno task load         # load data into SQLite
 deno task analyse      # AI analysis + action tracking
-deno task app          # launch dashboard
+deno task app          # launch the native desktop dashboard
 ```
 
 Or all at once:
@@ -75,7 +75,16 @@ Or all at once:
 deno task pipeline
 ```
 
-The dashboard opens at `http://localhost:8765`.
+The dashboard opens automatically in a native SprintLens window. When
+`src/main.ts` is run without Deno Desktop, it remains available at
+`http://localhost:8765` for browser-based development.
+
+To build a portable desktop package containing the dashboard and the fixtures
+under `data/`:
+
+```bash
+deno task bundle
+```
 
 ### 4. Try it with synthetic data (no real data needed)
 
