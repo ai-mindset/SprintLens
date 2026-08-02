@@ -155,6 +155,17 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
     }
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      border: 0;
+    }
   </style>
 </head>
 <body>
@@ -238,6 +249,7 @@
       <h2>Details</h2>
       <div id="detail-content"></div>
     </section>
+    <p class="visually-hidden" id="zoom-announcement" role="status" aria-live="polite"></p>
   </main>
 
   <script type="module">
@@ -282,6 +294,43 @@
       updateThemeToggle();
     });
     updateThemeToggle();
+
+    const zoomAnnouncement = document.getElementById("zoom-announcement");
+    const zoomStep = 0.1;
+    const minZoom = 0.75;
+    const maxZoom = 2;
+    let appZoom = 1;
+    try {
+      appZoom = Number(localStorage.getItem("sprintlens-zoom")) || 1;
+    } catch {
+      // Use the default scale when storage is unavailable.
+    }
+
+    function applyZoom(value, announce = true) {
+      appZoom = Math.min(maxZoom, Math.max(minZoom, Math.round(value * 10) / 10));
+      document.documentElement.style.zoom = String(appZoom);
+      try {
+        localStorage.setItem("sprintlens-zoom", String(appZoom));
+      } catch {
+        // The scale still applies for this session when storage is unavailable.
+      }
+      if (announce) zoomAnnouncement.textContent = `Zoom ${Math.round(appZoom * 100)} percent`;
+    }
+
+    applyZoom(appZoom, false);
+    addEventListener("keydown", event => {
+      if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+      if (["+", "=", "Add"].includes(event.key)) {
+        event.preventDefault();
+        applyZoom(appZoom + zoomStep);
+      } else if (["-", "_", "Subtract"].includes(event.key)) {
+        event.preventDefault();
+        applyZoom(appZoom - zoomStep);
+      } else if (event.key === "0") {
+        event.preventDefault();
+        applyZoom(1);
+      }
+    });
 
     const requests = new Map();
 
