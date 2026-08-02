@@ -7,21 +7,131 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
   <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6.17/dist/plot.umd.min.js"></script>
+  <script>
+    try {
+      const savedTheme = localStorage.getItem("sprintlens-theme");
+      document.documentElement.dataset.theme = savedTheme ||
+        (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    } catch {
+      document.documentElement.dataset.theme = "light";
+    }
+  </script>
   <style>
-    :root { --primary: #2a9d8f; --pico-card-background-color: #fff; }
-    body { padding-top: 2rem; padding-bottom: 4rem; }
-    .stat-card { text-align: center; }
-    .stat-card .value { font-size: 2rem; font-weight: 700; color: var(--primary); }
-    .stat-card .label { font-size: 0.85rem; color: var(--pico-muted-color); }
+    :root {
+      --primary: #168578;
+      --accent-soft: #e0f3f0;
+      --app-background: #f4f7f8;
+      --surface: #ffffff;
+      --surface-raised: #ffffff;
+      --surface-muted: #eef3f4;
+      --border: #dbe4e6;
+      --chart-grid: #d9e2e4;
+      --text-strong: #17252a;
+      --shadow: 0 1px 2px rgb(20 40 48 / 6%), 0 10px 30px rgb(20 40 48 / 5%);
+      --pico-primary: var(--primary);
+      --pico-card-background-color: var(--surface);
+      --pico-card-border-color: var(--border);
+      color-scheme: light;
+    }
+    :root[data-theme="dark"] {
+      --primary: #55c8b8;
+      --accent-soft: #173f3b;
+      --app-background: #0d1519;
+      --surface: #142126;
+      --surface-raised: #19282e;
+      --surface-muted: #203138;
+      --border: #2b3d44;
+      --chart-grid: #34474e;
+      --text-strong: #edf7f6;
+      --shadow: 0 1px 2px rgb(0 0 0 / 20%), 0 14px 36px rgb(0 0 0 / 18%);
+      --pico-primary: var(--primary);
+      --pico-card-background-color: var(--surface);
+      --pico-card-border-color: var(--border);
+      color-scheme: dark;
+    }
+    body {
+      min-height: 100vh;
+      padding: 0 0 4rem;
+      background:
+        radial-gradient(circle at 15% -10%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 32rem),
+        var(--app-background);
+    }
+    main.container { padding-top: 1.5rem; }
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand h1 { margin: 0; color: var(--text-strong); letter-spacing: -0.035em; }
+    .brand p { margin: 0.25rem 0 0; color: var(--pico-muted-color); }
+    .theme-toggle {
+      display: inline-flex;
+      width: auto;
+      min-width: 7.25rem;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      margin: 0;
+      padding: 0.5rem 0.8rem;
+      border-color: var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--text-strong);
+      box-shadow: var(--shadow);
+      font-size: 0.82rem;
+    }
+    .theme-toggle:hover { background: var(--surface-muted); }
+    section { margin-bottom: 2rem; }
+    section > h2 { margin-bottom: 0.8rem; color: var(--text-strong); }
+    article {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    article h2, article h3 { color: var(--text-strong); }
+    .stat-card { position: relative; overflow: hidden; text-align: left; }
+    .stat-card::before {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 3px;
+      background: var(--primary);
+      content: "";
+    }
+    .stat-card .value {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 750;
+      line-height: 1.1;
+      color: var(--primary);
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-card .label { margin-top: 0.35rem; font-size: 0.82rem; color: var(--pico-muted-color); }
+    #insights { border-left: 3px solid var(--primary); background: var(--surface-raised); }
+    #insights p { margin: 0; font-size: 1.02rem; line-height: 1.7; }
     .chart { min-height: 280px; }
     .chart figure { margin: 0; }
     .chart svg { overflow: visible; }
+    .chart svg text { fill: currentColor; }
+    .chart svg [aria-label*="grid"] { color: var(--chart-grid); }
+    .chart svg g[aria-label="tip"] path { fill: var(--surface-raised); stroke: var(--border); }
     .clickable-bar { cursor: pointer; transition: opacity 120ms ease; }
     .clickable-bar:hover { opacity: 0.82; }
-    #detail-panel { margin-top: 2rem; }
+    #quotes, #action-list, #detail-content { display: grid; gap: 0.85rem; }
+    #quotes article, #action-list article, #detail-content article { margin: 0; box-shadow: none; }
+    #detail-panel {
+      margin-top: 2rem;
+      padding: 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface-muted);
+    }
     #detail-panel article { margin-bottom: 1rem; }
-    .quote { font-style: italic; border-left: 3px solid var(--primary); padding-left: 1rem; margin: 0.5rem 0; }
-    .tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 12px; font-size: 0.75rem; margin-right: 0.4rem; }
+    .quote { border-left: 3px solid var(--primary); padding-left: 1rem; margin: 0.65rem 0 0; line-height: 1.6; }
+    .tag { display: inline-block; padding: 0.18rem 0.55rem; border-radius: 999px; font-size: 0.72rem; font-weight: 650; letter-spacing: 0.01em; margin-right: 0.4rem; }
     .tag-positive { background: #e8f5f3; color: #1d7a6e; }
     .tag-negative { background: #fdecea; color: #c0392b; }
     .tag-neutral { background: #f0f0f0; color: #555; }
@@ -29,12 +139,36 @@
     .tag-partial { background: #fff4db; color: #b38600; }
     .tag-not_done { background: #fdecea; color: #c0392b; }
     .tag-dropped { background: #f0f0f0; color: #777; }
+    [data-theme="dark"] .tag-positive,
+    [data-theme="dark"] .tag-done { background: #173f3b; color: #7bd8cb; }
+    [data-theme="dark"] .tag-negative,
+    [data-theme="dark"] .tag-not_done { background: #482721; color: #ff9f8c; }
+    [data-theme="dark"] .tag-neutral,
+    [data-theme="dark"] .tag-dropped { background: #29373d; color: #c1cdd1; }
+    [data-theme="dark"] .tag-partial { background: #493b1d; color: #f2d27c; }
+    @media (max-width: 576px) {
+      .app-header { align-items: flex-start; }
+      .brand p { max-width: 18rem; }
+      .theme-toggle { min-width: auto; }
+      .theme-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+    }
   </style>
 </head>
 <body>
   <main class="container">
-    <h1>🏃🔍 SprintLens</h1>
-    <p class="pico-color-jade-500">Sprint ceremony effectiveness — backed by data</p>
+    <header class="app-header">
+      <div class="brand">
+        <h1>🏃🔍 SprintLens</h1>
+        <p>Sprint ceremony effectiveness — backed by data</p>
+      </div>
+      <button class="outline theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode">
+        <span id="theme-icon" aria-hidden="true">☾</span>
+        <span class="theme-label" id="theme-label">Dark mode</span>
+      </button>
+    </header>
 
     <section id="summary"></section>
 
@@ -124,6 +258,31 @@
       dropped: "Dropped",
     };
 
+    const themeToggle = document.getElementById("theme-toggle");
+    const themeIcon = document.getElementById("theme-icon");
+    const themeLabel = document.getElementById("theme-label");
+
+    function updateThemeToggle() {
+      const isDark = document.documentElement.dataset.theme === "dark";
+      const nextTheme = isDark ? "light" : "dark";
+      themeIcon.textContent = isDark ? "☀" : "☾";
+      themeLabel.textContent = `${nextTheme[0].toUpperCase()}${nextTheme.slice(1)} mode`;
+      themeToggle.setAttribute("aria-label", `Switch to ${nextTheme} mode`);
+      themeToggle.setAttribute("aria-pressed", String(isDark));
+    }
+
+    themeToggle.addEventListener("click", () => {
+      const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = nextTheme;
+      try {
+        localStorage.setItem("sprintlens-theme", nextTheme);
+      } catch {
+        // The theme still applies for this session when storage is unavailable.
+      }
+      updateThemeToggle();
+    });
+    updateThemeToggle();
+
     const requests = new Map();
 
     function fetchJSON(path) {
@@ -162,7 +321,11 @@
         height: 300,
         ariaLabel,
         ariaDescription,
-        style: { overflow: "visible" },
+        style: {
+          overflow: "visible",
+          color: "var(--pico-color)",
+          background: "transparent",
+        },
       };
     }
 
