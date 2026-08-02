@@ -19,7 +19,10 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Setup repo
@@ -30,12 +33,14 @@ jobs:
         with:
           deno-version: v2.x
 
-      # Uncomment this step to verify the use of 'deno fmt' on each commit.
-      # - name: Verify formatting
-      #   run: deno fmt --check
+      - name: Verify formatting
+        run: deno fmt --check
+
+      - name: Type check
+        run: deno check src/main.ts
 
       - name: Run linter
         run: deno lint
 
       - name: Run tests
-        run: deno test -A
+        run: deno test

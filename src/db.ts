@@ -1,10 +1,12 @@
 import { DatabaseSync } from "node:sqlite";
 import { getLoadablePath } from "sqlite-vec";
+import { ensureDirSync } from "@std/fs";
+import { dirname, resolve } from "@std/path";
 import { config } from "../src/config.ts";
 
 export type DB = DatabaseSync;
 
-export const EMBED_DIM = 4096; // qwen3-embedding:8b — verify and adjust for your model
+export const EMBED_DIM = config.embedDim;
 
 function vecExtPath(): string {
   const ext = Deno.build.os === "windows"
@@ -65,6 +67,23 @@ CREATE TABLE IF NOT EXISTS ai_analysis (
 `;
 
 export function openDB(path = config.dbPath): DB {
+  if (path !== ":memory:") {
+    ensureDirSync(dirname(path));
+    const seed = resolve(import.meta.dirname!, "..", "data", "sprintlens.db");
+    const destination = resolve(path);
+    if (seed !== destination) {
+      try {
+        Deno.statSync(destination);
+      } catch (error) {
+        if (!(error instanceof Deno.errors.NotFound)) throw error;
+        try {
+          Deno.copyFileSync(seed, destination);
+        } catch (seedError) {
+          if (!(seedError instanceof Deno.errors.NotFound)) throw seedError;
+        }
+      }
+    }
+  }
   const db = new DatabaseSync(path, { allowExtension: true });
   db.loadExtension(normalizeLoadExtensionPath(vecLoadPath()));
 

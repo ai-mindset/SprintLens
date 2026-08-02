@@ -6,13 +6,17 @@
     "analyse": "deno run --allow-all src/analyse.ts",
     "test": "deno test",
     "app": "deno run --allow-all tasks/run_desktop.ts",
-    "bundle": "deno desktop --allow-all --output=sprintlens --include=index.html --include=data desktop.ts",
+    "bundle": "deno run --allow-all tasks/build_desktop.ts",
     "generate": "deno run --allow-all tasks/generate_synthetic.ts",
-    "pipeline": "deno task setup && deno task load && deno task analyse && deno task app"
+    "pipeline": "deno task load && deno task analyse && deno task app"
   },
   "nodeModulesDir": "auto",
   "imports": {
+    "@picocss/pico": "npm:@picocss/pico@2.1.1",
+    "d3": "npm:d3@7.9.0",
     "@std/path": "jsr:@std/path",
+    "@std/path/posix": "jsr:@std/path/posix",
+    "@std/path/windows": "jsr:@std/path/windows",
     "@std/assert": "jsr:@std/assert",
     "@std/fs": "jsr:@std/fs",
     "sqlite-vec": "npm:sqlite-vec",

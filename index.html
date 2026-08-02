@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SprintLens</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6.17/dist/plot.umd.min.js"></script>
-  <script>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SprintLens</title>
+    <link rel="stylesheet" href="/vendor/pico.min.css">
+    <script src="/vendor/d3.min.js"></script>
+    <script src="/vendor/plot.umd.min.js"></script>
+    <script>
     try {
       const savedTheme = localStorage.getItem("sprintlens-theme");
       document.documentElement.dataset.theme = savedTheme ||
@@ -15,8 +15,8 @@
     } catch {
       document.documentElement.dataset.theme = "light";
     }
-  </script>
-  <style>
+    </script>
+    <style>
     :root {
       --primary: #168578;
       --accent-soft: #e0f3f0;
@@ -53,10 +53,13 @@
       min-height: 100vh;
       padding: 0 0 4rem;
       background:
-        radial-gradient(circle at 15% -10%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 32rem),
+        radial-gradient(circle at 15% -10%, color-mix(in srgb, var(--primary) 12%,
+        transparent), transparent 32rem),
         var(--app-background);
     }
-    main.container { padding-top: 1.5rem; }
+    main.container {
+      padding-top: 1.5rem;
+    }
     .app-header {
       display: flex;
       align-items: center;
@@ -66,8 +69,15 @@
       padding-bottom: 1.25rem;
       border-bottom: 1px solid var(--border);
     }
-    .brand h1 { margin: 0; color: var(--text-strong); letter-spacing: -0.035em; }
-    .brand p { margin: 0.25rem 0 0; color: var(--pico-muted-color); }
+    .brand h1 {
+      margin: 0;
+      color: var(--text-strong);
+      letter-spacing: -0.035em;
+    }
+    .brand p {
+      margin: 0.25rem 0 0;
+      color: var(--pico-muted-color);
+    }
     .theme-toggle {
       display: inline-flex;
       width: auto;
@@ -84,17 +94,31 @@
       box-shadow: var(--shadow);
       font-size: 0.82rem;
     }
-    .theme-toggle:hover { background: var(--surface-muted); }
-    section { margin-bottom: 2rem; }
-    section > h2 { margin-bottom: 0.8rem; color: var(--text-strong); }
+    .theme-toggle:hover {
+      background: var(--surface-muted);
+    }
+    section {
+      margin-bottom: 2rem;
+    }
+    section > h2 {
+      margin-bottom: 0.8rem;
+      color: var(--text-strong);
+    }
     article {
       border: 1px solid var(--border);
       border-radius: 14px;
       background: var(--surface);
       box-shadow: var(--shadow);
     }
-    article h2, article h3 { color: var(--text-strong); }
-    .stat-card { position: relative; overflow: hidden; text-align: left; }
+    article h2,
+    article h3 {
+      color: var(--text-strong);
+    }
+    .stat-card {
+      position: relative;
+      overflow: hidden;
+      text-align: left;
+    }
     .stat-card::before {
       position: absolute;
       inset: 0 auto 0 0;
@@ -109,19 +133,58 @@
       color: var(--primary);
       font-variant-numeric: tabular-nums;
     }
-    .stat-card .label { margin-top: 0.35rem; font-size: 0.82rem; color: var(--pico-muted-color); }
-    #insights { border-left: 3px solid var(--primary); background: var(--surface-raised); }
-    #insights p { margin: 0; font-size: 1.02rem; line-height: 1.7; }
-    .chart { min-height: 280px; }
-    .chart figure { margin: 0; }
-    .chart svg { overflow: visible; }
-    .chart svg text { fill: currentColor; }
-    .chart svg [aria-label*="grid"] { color: var(--chart-grid); }
-    .chart svg g[aria-label="tip"] path { fill: var(--surface-raised); stroke: var(--border); }
-    .clickable-bar { cursor: pointer; transition: opacity 120ms ease; }
-    .clickable-bar:hover { opacity: 0.82; }
-    #quotes, #action-list, #detail-content { display: grid; gap: 0.85rem; }
-    #quotes article, #action-list article, #detail-content article { margin: 0; box-shadow: none; }
+    .stat-card .label {
+      margin-top: 0.35rem;
+      font-size: 0.82rem;
+      color: var(--pico-muted-color);
+    }
+    #insights {
+      border-left: 3px solid var(--primary);
+      background: var(--surface-raised);
+    }
+    #insights p {
+      margin: 0;
+      font-size: 1.02rem;
+      line-height: 1.7;
+    }
+    .chart {
+      min-height: 280px;
+    }
+    .chart figure {
+      margin: 0;
+    }
+    .chart svg {
+      overflow: visible;
+    }
+    .chart svg text {
+      fill: currentColor;
+    }
+    .chart svg [aria-label*="grid"] {
+      color: var(--chart-grid);
+    }
+    .chart svg g[aria-label="tip"] path {
+      fill: var(--surface-raised);
+      stroke: var(--border);
+    }
+    .clickable-bar {
+      cursor: pointer;
+      transition: opacity 120ms ease;
+    }
+    .clickable-bar:hover {
+      opacity: 0.82;
+    }
+    #quotes,
+    #action-list,
+    #detail-content {
+      display: grid;
+      gap: 0.85rem;
+    }
+    #quotes article,
+    #action-list article,
+    #detail-content article {
+      margin: 0;
+      box-shadow: none;
+    }
     #detail-panel {
       margin-top: 2rem;
       padding: 1.25rem;
@@ -129,31 +192,116 @@
       border-radius: 16px;
       background: var(--surface-muted);
     }
-    #detail-panel article { margin-bottom: 1rem; }
-    .quote { border-left: 3px solid var(--primary); padding-left: 1rem; margin: 0.65rem 0 0; line-height: 1.6; }
-    .tag { display: inline-block; padding: 0.18rem 0.55rem; border-radius: 999px; font-size: 0.72rem; font-weight: 650; letter-spacing: 0.01em; margin-right: 0.4rem; }
-    .tag-positive { background: #e8f5f3; color: #1d7a6e; }
-    .tag-negative { background: #fdecea; color: #c0392b; }
-    .tag-neutral { background: #f0f0f0; color: #555; }
-    .tag-done { background: #e8f5f3; color: #1d7a6e; }
-    .tag-partial { background: #fff4db; color: #b38600; }
-    .tag-not_done { background: #fdecea; color: #c0392b; }
-    .tag-dropped { background: #f0f0f0; color: #777; }
+    #detail-panel article {
+      margin-bottom: 1rem;
+    }
+    .startup-status {
+      margin-bottom: 1.5rem;
+      padding: 1rem 1.15rem;
+    }
+    .startup-status[data-status="degraded"] {
+      border-left: 3px solid #b38600;
+    }
+    .startup-status[data-status="error"] {
+      border-left: 3px solid #c0392b;
+    }
+    .startup-status p,
+    .startup-status details {
+      margin-bottom: 0;
+    }
+    .startup-status summary {
+      margin-top: 0.65rem;
+    }
+    .startup-status code {
+      overflow-wrap: anywhere;
+    }
+    .quote {
+      border-left: 3px solid var(--primary);
+      padding-left: 1rem;
+      margin: 0.65rem 0 0;
+      line-height: 1.6;
+    }
+    .tag {
+      display: inline-block;
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 650;
+      letter-spacing: 0.01em;
+      margin-right: 0.4rem;
+    }
+    .tag-positive {
+      background: #e8f5f3;
+      color: #1d7a6e;
+    }
+    .tag-negative {
+      background: #fdecea;
+      color: #c0392b;
+    }
+    .tag-neutral {
+      background: #f0f0f0;
+      color: #555;
+    }
+    .tag-done {
+      background: #e8f5f3;
+      color: #1d7a6e;
+    }
+    .tag-partial {
+      background: #fff4db;
+      color: #b38600;
+    }
+    .tag-not_done {
+      background: #fdecea;
+      color: #c0392b;
+    }
+    .tag-dropped {
+      background: #f0f0f0;
+      color: #777;
+    }
     [data-theme="dark"] .tag-positive,
-    [data-theme="dark"] .tag-done { background: #173f3b; color: #7bd8cb; }
+    [data-theme="dark"] .tag-done {
+      background: #173f3b;
+      color: #7bd8cb;
+    }
     [data-theme="dark"] .tag-negative,
-    [data-theme="dark"] .tag-not_done { background: #482721; color: #ff9f8c; }
+    [data-theme="dark"] .tag-not_done {
+      background: #482721;
+      color: #ff9f8c;
+    }
     [data-theme="dark"] .tag-neutral,
-    [data-theme="dark"] .tag-dropped { background: #29373d; color: #c1cdd1; }
-    [data-theme="dark"] .tag-partial { background: #493b1d; color: #f2d27c; }
+    [data-theme="dark"] .tag-dropped {
+      background: #29373d;
+      color: #c1cdd1;
+    }
+    [data-theme="dark"] .tag-partial {
+      background: #493b1d;
+      color: #f2d27c;
+    }
     @media (max-width: 576px) {
-      .app-header { align-items: flex-start; }
-      .brand p { max-width: 18rem; }
-      .theme-toggle { min-width: auto; }
-      .theme-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .app-header {
+        align-items: flex-start;
+      }
+      .brand p {
+        max-width: 18rem;
+      }
+      .theme-toggle {
+        min-width: auto;
+      }
+      .theme-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+      }
     }
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
     }
     .visually-hidden {
       position: absolute;
@@ -166,93 +314,108 @@
       white-space: nowrap;
       border: 0;
     }
-  </style>
-</head>
-<body>
-  <main class="container">
-    <header class="app-header">
-      <div class="brand">
-        <h1>🏃🔍 SprintLens</h1>
-        <p>Sprint ceremony effectiveness — backed by data</p>
-      </div>
-      <button class="outline theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode">
-        <span id="theme-icon" aria-hidden="true">☾</span>
-        <span class="theme-label" id="theme-label">Dark mode</span>
-      </button>
-    </header>
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <header class="app-header">
+        <div class="brand">
+          <h1>🏃🔍 SprintLens</h1>
+          <p>Sprint ceremony effectiveness — backed by data</p>
+        </div>
+        <button class="outline theme-toggle" id="theme-toggle" type="button"
+          aria-label="Switch to dark mode">
+          <span id="theme-icon" aria-hidden="true">☾</span>
+          <span class="theme-label" id="theme-label">Dark mode</span>
+        </button>
+      </header>
 
-    <section id="summary"></section>
+      <article id="startup-status" class="startup-status" hidden
+        aria-live="polite">
+        <strong id="startup-title"></strong>
+        <p id="startup-message"></p>
+        <details>
+          <summary>Configuration details</summary>
+          <p id="startup-config"></p>
+          <p>Override settings with <code>SPRINTLENS_DATA_DIR</code>, <code>SPRINTLENS_DB_PATH</code>, <code>SPRINTLENS_AI_BASE_URL</code>, <code>SPRINTLENS_API_KEY</code>, <code>SPRINTLENS_CHAT_MODEL</code>, <code>SPRINTLENS_EMBED_MODEL</code>, and <code>SPRINTLENS_EMBED_DIM</code>.</p>
+        </details>
+      </article>
 
-    <section>
-      <h2>Auto-generated insights</h2>
-      <article id="insights"></article>
-    </section>
+      <section id="summary"></section>
 
-    <section class="grid">
-      <div>
-        <article>
-          <h3>Sentiment over time</h3>
-          <div class="chart" id="sentiment-chart"></div>
-        </article>
-      </div>
-      <div>
-        <article>
-          <h3>Sentiment by sprint</h3>
-          <div class="chart" id="sentiment-sprint-chart"></div>
-        </article>
-      </div>
-    </section>
+      <section>
+        <h2>Auto-generated insights</h2>
+        <article id="insights"></article>
+      </section>
 
-    <section class="grid">
-      <div>
-        <article>
-          <h2>Recurring themes</h2>
-          <p class="pico-color-grey-500" id="themes-summary">Hover for an exact value; click for related updates.</p>
-          <div class="chart" id="themes-chart"></div>
-        </article>
-      </div>
-      <div>
-        <article>
-          <h2>Recurring blockers</h2>
-          <p class="pico-color-grey-500" id="blockers-summary">Hover for an exact value; click for related updates.</p>
-          <div class="chart" id="blockers-chart"></div>
-        </article>
-      </div>
-    </section>
+      <section class="grid">
+        <div>
+          <article>
+            <h3>Sentiment over time</h3>
+            <div class="chart" id="sentiment-chart"></div>
+          </article>
+        </div>
+        <div>
+          <article>
+            <h3>Sentiment by sprint</h3>
+            <div class="chart" id="sentiment-sprint-chart"></div>
+          </article>
+        </div>
+      </section>
 
-    <section class="grid">
-      <div>
-        <article>
-          <h2>Action item follow-through</h2>
-          <div class="chart" id="actions-chart"></div>
-        </article>
-      </div>
-      <div>
-        <article>
-          <h2>Action follow-through by sprint</h2>
-          <div class="chart" id="actions-sprint-chart"></div>
-        </article>
-      </div>
-    </section>
+      <section class="grid">
+        <div>
+          <article>
+            <h2>Recurring themes</h2>
+            <p class="pico-color-grey-500"
+              id="themes-summary">Hover for an exact value; click for related updates.</p>
+            <div class="chart" id="themes-chart"></div>
+          </article>
+        </div>
+        <div>
+          <article>
+            <h2>Recurring blockers</h2>
+            <p class="pico-color-grey-500"
+              id="blockers-summary">Hover for an exact value; click for related updates.</p>
+            <div class="chart" id="blockers-chart"></div>
+          </article>
+        </div>
+      </section>
 
-    <section>
-      <h2>Notable quotes</h2>
-      <div id="quotes"></div>
-    </section>
+      <section class="grid">
+        <div>
+          <article>
+            <h2>Action item follow-through</h2>
+            <div class="chart" id="actions-chart"></div>
+          </article>
+        </div>
+        <div>
+          <article>
+            <h2>Action follow-through by sprint</h2>
+            <div class="chart" id="actions-sprint-chart"></div>
+          </article>
+        </div>
+      </section>
 
-    <section>
-      <h2>Recent action items</h2>
-      <div id="action-list"></div>
-    </section>
+      <section>
+        <h2>Notable quotes</h2>
+        <div id="quotes"></div>
+      </section>
 
-    <section id="detail-panel" style="display:none;">
-      <h2>Details</h2>
-      <div id="detail-content"></div>
-    </section>
-    <p class="visually-hidden" id="zoom-announcement" role="status" aria-live="polite"></p>
-  </main>
+      <section>
+        <h2>Recent action items</h2>
+        <div id="action-list"></div>
+      </section>
 
-  <script type="module">
+      <section id="detail-panel" style="display:none;">
+        <h2>Details</h2>
+        <div id="detail-content"></div>
+      </section>
+      <p class="visually-hidden" id="zoom-announcement" role="status"
+        aria-live="polite"></p>
+    </main>
+
+    <script type="module">
     const colours = {
       positive: "#2a9d8f",
       neutral: "#8d99ae",
@@ -278,13 +441,17 @@
       const isDark = document.documentElement.dataset.theme === "dark";
       const nextTheme = isDark ? "light" : "dark";
       themeIcon.textContent = isDark ? "☀" : "☾";
-      themeLabel.textContent = `${nextTheme[0].toUpperCase()}${nextTheme.slice(1)} mode`;
+      themeLabel.textContent = `${nextTheme[0].toUpperCase()}${
+        nextTheme.slice(1)
+      } mode`;
       themeToggle.setAttribute("aria-label", `Switch to ${nextTheme} mode`);
       themeToggle.setAttribute("aria-pressed", String(isDark));
     }
 
     themeToggle.addEventListener("click", () => {
-      const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      const nextTheme = document.documentElement.dataset.theme === "dark"
+        ? "light"
+        : "dark";
       document.documentElement.dataset.theme = nextTheme;
       try {
         localStorage.setItem("sprintlens-theme", nextTheme);
@@ -314,11 +481,13 @@
       } catch {
         // The scale still applies for this session when storage is unavailable.
       }
-      if (announce) zoomAnnouncement.textContent = `Zoom ${Math.round(appZoom * 100)} percent`;
+      if (announce) {
+        zoomAnnouncement.textContent = `Zoom ${Math.round(appZoom * 100)} percent`;
+      }
     }
 
     applyZoom(appZoom, false);
-    addEventListener("keydown", event => {
+    addEventListener("keydown", (event) => {
       if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
       if (["+", "=", "Add"].includes(event.key)) {
         event.preventDefault();
@@ -337,10 +506,13 @@
 
     function fetchJSON(path) {
       if (!requests.has(path)) {
-        requests.set(path, fetch(path).then(res => {
-          if (!res.ok) throw new Error(`${path} returned ${res.status}`);
-          return res.json();
-        }));
+        requests.set(
+          path,
+          fetch(path).then((res) => {
+            if (!res.ok) throw new Error(`${path} returned ${res.status}`);
+            return res.json();
+          }),
+        );
       }
       return requests.get(path);
     }
@@ -348,9 +520,10 @@
     function countBy(data, keys) {
       const groups = new Map();
       for (const row of data) {
-        const values = keys.map(key => row[key]);
+        const values = keys.map((key) => row[key]);
         const id = JSON.stringify(values);
-        const group = groups.get(id) ?? Object.fromEntries(keys.map((key, i) => [key, values[i]]));
+        const group = groups.get(id) ??
+          Object.fromEntries(keys.map((key, i) => [key, values[i]]));
         group.count = (group.count ?? 0) + 1;
         groups.set(id, group);
       }
@@ -358,7 +531,10 @@
     }
 
     function chartWidth(id) {
-      return Math.max(320, Math.floor(document.getElementById(id).clientWidth || 640));
+      return Math.max(
+        320,
+        Math.floor(document.getElementById(id).clientWidth || 640),
+      );
     }
 
     function mountChart(id, plot) {
@@ -387,8 +563,55 @@
       });
     }
 
+    function element(name, options = {}, children = []) {
+      const node = document.createElement(name);
+      if (options.className) node.className = options.className;
+      if (options.text !== undefined) node.textContent = String(options.text);
+      node.append(...children);
+      return node;
+    }
+
     function tag(value, type) {
-      return `<span class="tag tag-${type}">${value}</span>`;
+      const knownTypes = new Set([
+        "positive",
+        "negative",
+        "neutral",
+        "done",
+        "partial",
+        "not_done",
+        "dropped",
+      ]);
+      return element("span", {
+        className: `tag tag-${knownTypes.has(type) ? type : "neutral"}`,
+        text: value ?? "Unknown",
+      });
+    }
+
+    function updateCard(update) {
+      const meta = element("div", {}, [
+        tag(update.sentiment, update.sentiment),
+        element("strong", { text: update.author }),
+        document.createTextNode(" "),
+        element("span", {
+          className: "pico-color-grey-500",
+          text: new Date(parseInt(update.ts) * 1000).toLocaleDateString(),
+        }),
+      ]);
+      return element("article", {}, [
+        meta,
+        element("div", { className: "quote", text: update.text }),
+      ]);
+    }
+
+    function actionCard(action) {
+      const status = action.action_status;
+      return element("article", {}, [
+        element("div", {}, [
+          tag(statusLabels[status] ?? status, status),
+          element("strong", { text: action.retro_name }),
+        ]),
+        element("div", { className: "quote", text: action.text }),
+      ]);
     }
 
     // --- Summary ---
@@ -400,10 +623,28 @@
       ]);
 
       const total = sentiment.length;
-      const posPct = total ? Math.round(sentiment.filter(s => s.sentiment === "positive").length / total * 100) : 0;
-      const negPct = total ? Math.round(sentiment.filter(s => s.sentiment === "negative").length / total * 100) : 0;
-      const donePct = actions.length ? Math.round(actions.filter(a => a.action_status === "done").length / actions.length * 100) : 0;
-      const notDonePct = actions.length ? Math.round(actions.filter(a => a.action_status === "not_done").length / actions.length * 100) : 0;
+      const posPct = total
+        ? Math.round(
+          sentiment.filter((s) => s.sentiment === "positive").length / total * 100,
+        )
+        : 0;
+      const negPct = total
+        ? Math.round(
+          sentiment.filter((s) => s.sentiment === "negative").length / total * 100,
+        )
+        : 0;
+      const donePct = actions.length
+        ? Math.round(
+          actions.filter((a) => a.action_status === "done").length /
+            actions.length * 100,
+        )
+        : 0;
+      const notDonePct = actions.length
+        ? Math.round(
+          actions.filter((a) => a.action_status === "not_done").length /
+            actions.length * 100,
+        )
+        : 0;
 
       const stats = [
         { label: "Updates analysed", value: total },
@@ -414,13 +655,15 @@
         { label: "Actions not followed through", value: `${notDonePct}%` },
       ];
 
-      document.getElementById("summary").innerHTML =
-        `<div class="grid">${stats.map(s => `
-          <article class="stat-card">
-            <div class="value">${s.value}</div>
-            <div class="label">${s.label}</div>
-          </article>
-        `).join("")}</div>`;
+      const cards = stats.map((stat) =>
+        element("article", { className: "stat-card" }, [
+          element("div", { className: "value", text: stat.value }),
+          element("div", { className: "label", text: stat.label }),
+        ])
+      );
+      document.getElementById("summary").replaceChildren(
+        element("div", { className: "grid" }, cards),
+      );
     }
 
     // --- Insights ---
@@ -432,29 +675,35 @@
       ]);
 
       const total = sentiment.length;
-      const negCount = sentiment.filter(s => s.sentiment === "negative").length;
-      const posCount = sentiment.filter(s => s.sentiment === "positive").length;
+      const negCount = sentiment.filter((s) => s.sentiment === "negative").length;
+      const posCount = sentiment.filter((s) => s.sentiment === "positive").length;
       const negPct = total ? Math.round(negCount / total * 100) : 0;
       const posPct = total ? Math.round(posCount / total * 100) : 0;
 
-      const notDone = actions.filter(a => a.action_status === "not_done").length;
-      const dropped = actions.filter(a => a.action_status === "dropped").length;
-      const done = actions.filter(a => a.action_status === "done").length;
+      const notDone = actions.filter((a) => a.action_status === "not_done").length;
+      const dropped = actions.filter((a) => a.action_status === "dropped").length;
+      const done = actions.filter((a) => a.action_status === "done").length;
 
       let text = "";
       if (negPct > posPct) {
-        text += `Negative sentiment (${negPct}%) is outpacing positive sentiment (${posPct}%). `;
+        text +=
+          `Negative sentiment (${negPct}%) is outpacing positive sentiment (${posPct}%). `;
       } else {
-        text += `Positive sentiment (${posPct}%) is higher than negative (${negPct}%). `;
+        text +=
+          `Positive sentiment (${posPct}%) is higher than negative (${negPct}%). `;
       }
 
       if (notDone + dropped > done) {
-        text += `However, ${notDone + dropped} action items were not followed through or dropped, compared to ${done} completed. This suggests retros may not be translating into change.`;
+        text += `However, ${
+          notDone + dropped
+        } action items were not followed through or dropped, compared to ${done} completed. This suggests retros may not be translating into change.`;
       } else {
-        text += `Action follow-through looks healthy: ${done} completed versus ${notDone + dropped} missed or dropped.`;
+        text += `Action follow-through looks healthy: ${done} completed versus ${
+          notDone + dropped
+        } missed or dropped.`;
       }
 
-      document.getElementById("insights").innerHTML = `<p>${text}</p>`;
+      document.getElementById("insights").replaceChildren(element("p", { text }));
     }
 
     // --- Sentiment charts ---
@@ -462,9 +711,12 @@
     async function renderSentiment() {
       const data = await fetchJSON("/api/sentiment-trends");
 
-      data.forEach(d => {
+      data.forEach((d) => {
         const date = new Date(parseInt(d.thread_ts) * 1000);
-        d.dateLabel = date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        d.dateLabel = date.toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+        });
       });
 
       const chartData = countBy(data, ["dateLabel", "sentiment"]);
@@ -494,8 +746,21 @@
               Sentiment: "sentiment",
               Updates: "count",
             },
-            tip: { pointer: "x", format: { Date: true, Sentiment: true, Updates: true, x: false, y: false, fill: false } },
-            ariaLabel: d => `${d.dateLabel}: ${d.count} ${d.sentiment} update${d.count === 1 ? "" : "s"}`,
+            tip: {
+              pointer: "x",
+              format: {
+                Date: true,
+                Sentiment: true,
+                Updates: true,
+                x: false,
+                y: false,
+                fill: false,
+              },
+            },
+            ariaLabel: (d) =>
+              `${d.dateLabel}: ${d.count} ${d.sentiment} update${
+                d.count === 1 ? "" : "s"
+              }`,
           }),
         ],
       });
@@ -526,9 +791,26 @@
             x: "sprint",
             y: "count",
             fill: "sentiment",
-            channels: { Sprint: "sprint", Sentiment: "sentiment", Updates: "count" },
-            tip: { pointer: "x", format: { Sprint: true, Sentiment: true, Updates: true, x: false, y: false, fill: false } },
-            ariaLabel: d => `${d.sprint}: ${d.count} ${d.sentiment} update${d.count === 1 ? "" : "s"}`,
+            channels: {
+              Sprint: "sprint",
+              Sentiment: "sentiment",
+              Updates: "count",
+            },
+            tip: {
+              pointer: "x",
+              format: {
+                Sprint: true,
+                Sentiment: true,
+                Updates: true,
+                x: false,
+                y: false,
+                fill: false,
+              },
+            },
+            ariaLabel: (d) =>
+              `${d.sprint}: ${d.count} ${d.sentiment} update${
+                d.count === 1 ? "" : "s"
+              }`,
           }),
         ],
       });
@@ -561,8 +843,12 @@
             sort: { y: "-x" },
             className: "clickable-bar",
             channels: { Theme: "theme", Updates: "count" },
-            tip: { pointer: "y", format: { Theme: true, Updates: true, x: false, y: false } },
-            ariaLabel: d => `${d.theme}: ${d.count} update${d.count === 1 ? "" : "s"}`,
+            tip: {
+              pointer: "y",
+              format: { Theme: true, Updates: true, x: false, y: false },
+            },
+            ariaLabel: (d) =>
+              `${d.theme}: ${d.count} update${d.count === 1 ? "" : "s"}`,
           }),
         ],
         x: { label: "Updates", grid: true, nice: true },
@@ -571,13 +857,8 @@
 
       mountChart("themes-chart", plot);
       addFocusedClick(plot, ({ theme }) => {
-          const matches = raw.filter(d => d.themes && d.themes.includes(theme));
-          showDetails(`Updates mentioning "${theme}"`, matches.map(d => `
-            <article>
-              <div>${tag(d.sentiment, d.sentiment)} <strong>${d.author}</strong> <span class="pico-color-grey-500">${new Date(parseInt(d.ts) * 1000).toLocaleDateString()}</span></div>
-              <div class="quote">${d.text}</div>
-            </article>
-          `).join(""));
+        const matches = raw.filter((d) => d.themes && d.themes.includes(theme));
+        showDetails(`Updates mentioning "${theme}"`, matches.map(updateCard));
       });
     }
 
@@ -604,8 +885,12 @@
             sort: { y: "-x" },
             className: "clickable-bar",
             channels: { Blocker: "blocker", Updates: "count" },
-            tip: { pointer: "y", format: { Blocker: true, Updates: true, x: false, y: false } },
-            ariaLabel: d => `${d.blocker}: ${d.count} update${d.count === 1 ? "" : "s"}`,
+            tip: {
+              pointer: "y",
+              format: { Blocker: true, Updates: true, x: false, y: false },
+            },
+            ariaLabel: (d) =>
+              `${d.blocker}: ${d.count} update${d.count === 1 ? "" : "s"}`,
           }),
         ],
         x: { label: "Updates", grid: true, nice: true },
@@ -614,13 +899,13 @@
 
       mountChart("blockers-chart", plot);
       addFocusedClick(plot, ({ blocker }) => {
-          const matches = raw.filter(d => d.blockers && d.blockers.includes(blocker));
-          showDetails(`Updates mentioning blocker "${blocker}"`, matches.map(d => `
-            <article>
-              <div>${tag(d.sentiment, d.sentiment)} <strong>${d.author}</strong> <span class="pico-color-grey-500">${new Date(parseInt(d.ts) * 1000).toLocaleDateString()}</span></div>
-              <div class="quote">${d.text}</div>
-            </article>
-          `).join(""));
+        const matches = raw.filter((d) =>
+          d.blockers && d.blockers.includes(blocker)
+        );
+        showDetails(
+          `Updates mentioning blocker "${blocker}"`,
+          matches.map(updateCard),
+        );
       });
     }
 
@@ -634,7 +919,10 @@
         return acc;
       }, {});
 
-      const chartData = Object.entries(counts).map(([status, count]) => ({ status, count }));
+      const chartData = Object.entries(counts).map(([status, count]) => ({
+        status,
+        count,
+      }));
 
       const plot = Plot.plot({
         ...chartOptions(
@@ -647,32 +935,39 @@
           Plot.barY(chartData, {
             x: "status",
             y: "count",
-            fill: d => colours[d.status] ?? "#999",
+            fill: (d) => colours[d.status] ?? "#999",
             className: "clickable-bar",
-            channels: { Status: d => statusLabels[d.status] ?? d.status, Actions: "count" },
-            tip: { pointer: "x", format: { Status: true, Actions: true, x: false, y: false } },
-            ariaLabel: d => `${statusLabels[d.status] ?? d.status}: ${d.count} action${d.count === 1 ? "" : "s"}`,
+            channels: {
+              Status: (d) => statusLabels[d.status] ?? d.status,
+              Actions: "count",
+            },
+            tip: {
+              pointer: "x",
+              format: { Status: true, Actions: true, x: false, y: false },
+            },
+            ariaLabel: (d) =>
+              `${statusLabels[d.status] ?? d.status}: ${d.count} action${
+                d.count === 1 ? "" : "s"
+              }`,
           }),
           Plot.text(chartData, {
             x: "status",
             y: "count",
             dy: -6,
-            text: d => d.count,
+            text: (d) => d.count,
           }),
         ],
-        x: { label: "Status", tickFormat: d => statusLabels[d] ?? d },
+        x: { label: "Status", tickFormat: (d) => statusLabels[d] ?? d },
         y: { label: "Actions", grid: true, nice: true },
       });
 
       mountChart("actions-chart", plot);
       addFocusedClick(plot, ({ status }) => {
-          const matches = data.filter(d => d.action_status === status);
-          showDetails(`Action items: ${statusLabels[status]}`, matches.map(d => `
-            <article>
-              <div>${tag(statusLabels[status], status)} <strong>${d.retro_name}</strong></div>
-              <div class="quote">${d.text}</div>
-            </article>
-          `).join(""));
+        const matches = data.filter((d) => d.action_status === status);
+        showDetails(
+          `Action items: ${statusLabels[status] ?? status}`,
+          matches.map(actionCard),
+        );
       });
     }
 
@@ -692,7 +987,7 @@
           domain: ["done", "partial", "not_done", "dropped"],
           range: [colours.done, colours.partial, colours.not_done, colours.dropped],
           legend: true,
-          tickFormat: d => statusLabels[d] ?? d,
+          tickFormat: (d) => statusLabels[d] ?? d,
         },
         marks: [
           Plot.ruleY([0], { ariaHidden: true }),
@@ -702,11 +997,24 @@
             fill: "status",
             channels: {
               Sprint: "sprint",
-              Status: d => statusLabels[d.status] ?? d.status,
+              Status: (d) => statusLabels[d.status] ?? d.status,
               Actions: "count",
             },
-            tip: { pointer: "x", format: { Sprint: true, Status: true, Actions: true, x: false, y: false, fill: false } },
-            ariaLabel: d => `${d.sprint}, ${statusLabels[d.status] ?? d.status}: ${d.count} action${d.count === 1 ? "" : "s"}`,
+            tip: {
+              pointer: "x",
+              format: {
+                Sprint: true,
+                Status: true,
+                Actions: true,
+                x: false,
+                y: false,
+                fill: false,
+              },
+            },
+            ariaLabel: (d) =>
+              `${d.sprint}, ${
+                statusLabels[d.status] ?? d.status
+              }: ${d.count} action${d.count === 1 ? "" : "s"}`,
           }),
         ],
       });
@@ -719,19 +1027,16 @@
     async function renderQuotes() {
       const data = await fetchJSON("/api/sentiment-trends");
 
-      const positive = data.filter(d => d.sentiment === "positive").sort(() => Math.random() - 0.5).slice(0, 2);
-      const negative = data.filter(d => d.sentiment === "negative").sort(() => Math.random() - 0.5).slice(0, 2);
+      const positive = data.filter((d) => d.sentiment === "positive").sort(() =>
+        Math.random() - 0.5
+      ).slice(0, 2);
+      const negative = data.filter((d) => d.sentiment === "negative").sort(() =>
+        Math.random() - 0.5
+      ).slice(0, 2);
 
       const items = [...positive, ...negative].sort(() => Math.random() - 0.5);
 
-      document.getElementById("quotes").innerHTML = items.map(d => `
-        <article>
-          ${tag(d.sentiment, d.sentiment)}
-          <strong>${d.author}</strong>
-          <span class="pico-color-grey-500">${new Date(parseInt(d.ts) * 1000).toLocaleDateString()}</span>
-          <div class="quote">${d.text}</div>
-        </article>
-      `).join("");
+      document.getElementById("quotes").replaceChildren(...items.map(updateCard));
     }
 
     // --- Action list ---
@@ -739,27 +1044,76 @@
     async function renderActionList() {
       const data = await fetchJSON("/api/action-status");
 
-      document.getElementById("action-list").innerHTML = data.map(d => `
-        <article>
-          <div>${tag(statusLabels[d.action_status], d.action_status)} <strong>${d.retro_name}</strong></div>
-          <div>${d.text}</div>
-        </article>
-      `).join("");
+      document.getElementById("action-list").replaceChildren(
+        ...data.map(actionCard),
+      );
     }
 
     // --- Detail panel ---
 
-    function showDetails(title, html) {
+    function showDetails(title, items) {
       const panel = document.getElementById("detail-panel");
       const content = document.getElementById("detail-content");
       panel.style.display = "block";
-      content.innerHTML = `<h3>${title}</h3>${html || "<p>No matching items found.</p>"}`;
+      content.replaceChildren(
+        element("h3", { text: title }),
+        ...(items.length
+          ? items
+          : [element("p", { text: "No matching items found." })]),
+      );
       panel.scrollIntoView({ behavior: "smooth" });
+    }
+
+    async function renderStartupStatus() {
+      const health = await fetchJSON("/api/health");
+      const panel = document.getElementById("startup-status");
+      const title = document.getElementById("startup-title");
+      const message = document.getElementById("startup-message");
+      const configDetails = document.getElementById("startup-config");
+      const hasData = health.database.slackUpdates > 0 ||
+        health.database.retroItems > 0;
+
+      configDetails.textContent =
+        `Database: ${health.database.path}. AI provider: ${health.ai.baseURL}. Chat model: ${health.ai.chatModel}. Embedding model: ${health.ai.embedModel}. API key configured: ${
+          health.ai.apiKeyConfigured ? "yes" : "no"
+        }.`;
+
+      if (health.status === "error") {
+        panel.hidden = false;
+        panel.dataset.status = "error";
+        title.textContent = "SprintLens could not start its data service.";
+        message.textContent = health.database.message ||
+          "Check the database path and file permissions, then restart the app.";
+        return false;
+      }
+
+      if (!health.ai.ok || !hasData) {
+        panel.hidden = false;
+        panel.dataset.status = "degraded";
+        title.textContent = "SprintLens needs attention.";
+        const messages = [];
+        if (!hasData) {
+          messages.push(
+            "No source data is loaded; run deno task load and deno task analyse.",
+          );
+        }
+        if (!health.ai.ok) {
+          messages.push(
+            `The AI provider is unavailable${
+              health.ai.message ? ` (${health.ai.message})` : ""
+            }. Existing analysis remains available.`,
+          );
+        }
+        message.textContent = messages.join(" ");
+      }
+      return true;
     }
 
     // --- Render all ---
 
     try {
+      const canRender = await renderStartupStatus();
+      if (!canRender) throw new Error("The database is unavailable.");
       await Promise.all([
         renderSummary(),
         renderInsights(),
@@ -774,9 +1128,14 @@
       ]);
     } catch (error) {
       console.error(error);
-      document.getElementById("insights").innerHTML =
-        `<p role="alert">Dashboard data could not be loaded. ${error.message}</p>`;
+      const alert = element("p", {
+        text: `Dashboard data could not be loaded. ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      });
+      alert.setAttribute("role", "alert");
+      document.getElementById("insights").replaceChildren(alert);
     }
-  </script>
-</body>
+    </script>
+  </body>
 </html>

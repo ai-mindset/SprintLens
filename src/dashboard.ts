@@ -1,4 +1,33 @@
 import type { DB } from "./db.ts";
+import { dirname, fromFileUrl, join } from "@std/path";
+import { checkHealth, startupFailureHealth } from "./health.ts";
+
+type Asset = { file: string; contentType: string };
+
+const plotEntry = fromFileUrl(import.meta.resolve("@observablehq/plot"));
+const d3Entry = fromFileUrl(import.meta.resolve("d3"));
+const projectRoot = join(import.meta.dirname!, "..");
+const assets = new Map<string, Asset>([
+  ["/vendor/pico.min.css", {
+    file: fromFileUrl(import.meta.resolve("@picocss/pico")),
+    contentType: "text/css; charset=utf-8",
+  }],
+  ["/vendor/d3.min.js", {
+    file: join(dirname(d3Entry), "..", "dist", "d3.min.js"),
+    contentType: "text/javascript; charset=utf-8",
+  }],
+  ["/vendor/plot.umd.min.js", {
+    file: join(dirname(plotEntry), "..", "dist", "plot.umd.min.js"),
+    contentType: "text/javascript; charset=utf-8",
+  }],
+]);
+
+export type DashboardOptions = {
+  readIndex?: () => Promise<string>;
+  readAsset?: (file: string) => Promise<Uint8Array<ArrayBuffer>>;
+  getHealth?: () => Promise<unknown>;
+  startupError?: unknown;
+};
 
 export type SentimentRow = {
   thread_ts: string;
@@ -61,11 +90,19 @@ export function groupSentimentBySprint(
 }
 
 export function createDashboardHandler(
-  db: DB,
-  readIndex: () => Promise<string> = () => Deno.readTextFile("index.html"),
+  db: DB | null,
+  options: DashboardOptions = {},
 ): (request: Request) => Promise<Response> {
+  const readIndex = options.readIndex ??
+    (() => Deno.readTextFile(join(projectRoot, "index.html")));
+  const readAsset = options.readAsset ?? Deno.readFile;
+  const database = (): DB => {
+    if (!db) throw new Error("SprintLens database is unavailable");
+    return db;
+  };
+
   function sentimentTrends(): Response {
-    const rows = db.prepare(`
+    const rows = database().prepare(`
       SELECT s.thread_ts, s.ts, s.author, s.text, a.sentiment, a.themes, a.blockers
       FROM slack_update s
       JOIN ai_analysis a ON a.source_id = CAST(s.id AS TEXT) AND a.source = 'slack'
@@ -80,13 +117,13 @@ export function createDashboardHandler(
   }
 
   function sentimentBySprint(): Response {
-    const sentiments = db.prepare(`
+    const sentiments = database().prepare(`
       SELECT a.sentiment
       FROM slack_update s
       JOIN ai_analysis a ON a.source_id = CAST(s.id AS TEXT) AND a.source = 'slack'
       ORDER BY CAST(s.ts AS REAL)
     `).all() as { sentiment: string }[];
-    const sprints = db.prepare(`
+    const sprints = database().prepare(`
       SELECT retro_name FROM retro_item GROUP BY retro_name ORDER BY retro_name
     `).all() as { retro_name: string }[];
 
@@ -97,7 +134,7 @@ export function createDashboardHandler(
   }
 
   function frequency(column: "themes" | "blockers", label: string): Response {
-    const rows = db.prepare(`
+    const rows = database().prepare(`
       SELECT ${column} AS values_json FROM ai_analysis
       WHERE source = 'slack' AND ${column} IS NOT NULL
     `).all() as { values_json: string }[];
@@ -109,7 +146,7 @@ export function createDashboardHandler(
   }
 
   function actionStatus(): Response {
-    const rows = db.prepare(`
+    const rows = database().prepare(`
       SELECT r.retro_name, r.text, a.action_status, a.action_text, a.evidence
       FROM retro_item r
       JOIN ai_analysis a ON a.source_id = r.note_id AND a.source = 'retro'
@@ -130,7 +167,7 @@ export function createDashboardHandler(
 
   function actionStatusBySprint(): Response {
     return json(
-      db.prepare(`
+      database().prepare(`
       SELECT r.retro_name AS sprint, a.action_status AS status, COUNT(*) AS count
       FROM retro_item r
       JOIN ai_analysis a ON a.source_id = r.note_id AND a.source = 'retro'
@@ -143,6 +180,33 @@ export function createDashboardHandler(
 
   return async (request) => {
     const { pathname } = new URL(request.url);
+    if (pathname === "/api/health") {
+      const report = options.getHealth
+        ? await options.getHealth()
+        : db
+        ? await checkHealth(db)
+        : startupFailureHealth(options.startupError);
+      // The diagnostic itself remains readable when startup failed; data APIs
+      // below still return 503 until the database is available.
+      return json(report);
+    }
+    if (pathname === "/" || pathname === "/index.html") {
+      return new Response(await readIndex(), {
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      });
+    }
+    const asset = assets.get(pathname);
+    if (asset) {
+      return new Response(await readAsset(asset.file), {
+        headers: {
+          "Content-Type": asset.contentType,
+          "Cache-Control": "public, max-age=31536000, immutable",
+        },
+      });
+    }
+    if (!db && pathname.startsWith("/api/")) {
+      return json({ error: "SprintLens could not open its database" }, 503);
+    }
     if (pathname === "/api/sentiment-trends") return sentimentTrends();
     if (pathname === "/api/sentiment-by-sprint") return sentimentBySprint();
     if (pathname === "/api/themes") return frequency("themes", "theme");
@@ -150,11 +214,6 @@ export function createDashboardHandler(
     if (pathname === "/api/action-status") return actionStatus();
     if (pathname === "/api/action-status-by-sprint") {
       return actionStatusBySprint();
-    }
-    if (pathname === "/" || pathname === "/index.html") {
-      return new Response(await readIndex(), {
-        headers: { "Content-Type": "text/html; charset=utf-8" },
-      });
     }
     return new Response("Not found", { status: 404 });
   };
