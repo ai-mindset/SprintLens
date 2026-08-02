@@ -6,82 +6,88 @@ import {
   json,
   parseStringList,
 } from "../src/dashboard.ts";
-import { type DB, openDB } from "../src/db.ts";
+import type { DB } from "../src/db.ts";
 
 function testDatabase(): { db: DB; dispose: () => void } {
-  const path = Deno.makeTempFileSync({ suffix: ".db" });
-  const db = openDB(path);
+  const db = {
+    prepare(sql: string) {
+      const rows = sql.includes("SELECT s.thread_ts")
+        ? [
+          {
+            thread_ts: "100",
+            ts: "3",
+            author: "Alex",
+            text: "First update",
+            sentiment: "positive",
+            themes: '["delivery","qa"]',
+            blockers: "[]",
+          },
+          {
+            thread_ts: "200",
+            ts: "20",
+            author: "Bea",
+            text: "Second update",
+            sentiment: "negative",
+            themes: '["api","qa"]',
+            blockers: '["access"]',
+          },
+          {
+            thread_ts: "300",
+            ts: "100",
+            author: "Chen",
+            text: "Third update",
+            sentiment: "neutral",
+            themes: '["qa"]',
+            blockers: '["access"]',
+          },
+        ]
+        : sql.includes("SELECT a.sentiment")
+        ? [{ sentiment: "positive" }, { sentiment: "negative" }, {
+          sentiment: "neutral",
+        }]
+        : sql.includes("SELECT retro_name FROM retro_item")
+        ? [{ retro_name: "sprint-01" }, { retro_name: "sprint-02" }]
+        : sql.includes("SELECT themes AS values_json")
+        ? [{ values_json: '["delivery","qa"]' }, {
+          values_json: '["api","qa"]',
+        }, { values_json: '["qa"]' }]
+        : sql.includes("SELECT blockers AS values_json")
+        ? [{ values_json: "[]" }, { values_json: '["access"]' }, {
+          values_json: '["access"]',
+        }]
+        : sql.includes("SELECT r.retro_name, r.text")
+        ? [
+          {
+            retro_name: "sprint-01",
+            text: "Original action",
+            action_status: "done",
+            action_text: "Automate checks",
+            evidence: "CI is green",
+          },
+          {
+            retro_name: "sprint-02",
+            text: "Keep pairing",
+            action_status: "not_done",
+            action_text: null,
+            evidence: null,
+          },
+        ]
+        : sql.includes("SELECT r.retro_name AS sprint")
+        ? [
+          { sprint: "sprint-01", status: "done", count: 1 },
+          { sprint: "sprint-02", status: "not_done", count: 1 },
+        ]
+        : [];
+      return { all: () => rows };
+    },
+  } as unknown as DB;
   return {
     db,
-    dispose() {
-      db.close();
-      Deno.removeSync(path);
-    },
+    dispose() {},
   };
 }
 
-function seedDashboard(db: DB) {
-  const addSlack = db.prepare(
-    "INSERT INTO slack_update (thread_ts, author, text, ts) VALUES (?, ?, ?, ?)",
-  );
-  const addAnalysis = db.prepare(
-    `INSERT INTO ai_analysis
-      (source, source_id, sentiment, themes, blockers, action_text, action_status, evidence)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  );
-  const addRetro = db.prepare(
-    `INSERT INTO retro_item
-      (note_id, retro_name, author, text, "column") VALUES (?, ?, ?, ?, ?)`,
-  );
-
-  addSlack.run("200", "Bea", "Second update", "20");
-  addSlack.run("100", "Alex", "First update", "3");
-  addSlack.run("300", "Chen", "Third update", "100");
-  addAnalysis.run(
-    "slack",
-    "1",
-    "negative",
-    '["api","qa"]',
-    '["access"]',
-    null,
-    null,
-    null,
-  );
-  addAnalysis.run(
-    "slack",
-    "2",
-    "positive",
-    '["delivery","qa"]',
-    "[]",
-    null,
-    null,
-    null,
-  );
-  addAnalysis.run(
-    "slack",
-    "3",
-    "neutral",
-    '["qa"]',
-    '["access"]',
-    null,
-    null,
-    null,
-  );
-
-  addRetro.run("r1", "sprint-01", "Alex", "Original action", "action");
-  addRetro.run("r2", "sprint-02", "Bea", "Keep pairing", "action");
-  addAnalysis.run(
-    "retro",
-    "r1",
-    null,
-    null,
-    null,
-    "Automate checks",
-    "done",
-    "CI is green",
-  );
-  addAnalysis.run("retro", "r2", null, null, null, null, "not_done", null);
-}
+function seedDashboard(_db: DB) {}
 
 function responseJson(response: Response): Promise<unknown> {
   assertEquals(response.status, 200);
