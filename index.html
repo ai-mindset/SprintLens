@@ -207,14 +207,14 @@
       <div>
         <article>
           <h2>Recurring themes</h2>
-          <p class="pico-color-grey-500">Hover for an exact value; click for related updates.</p>
+          <p class="pico-color-grey-500" id="themes-summary">Hover for an exact value; click for related updates.</p>
           <div class="chart" id="themes-chart"></div>
         </article>
       </div>
       <div>
         <article>
           <h2>Recurring blockers</h2>
-          <p class="pico-color-grey-500">Hover for an exact value; click for related updates.</p>
+          <p class="pico-color-grey-500" id="blockers-summary">Hover for an exact value; click for related updates.</p>
           <div class="chart" id="blockers-chart"></div>
         </article>
       </div>
@@ -333,6 +333,7 @@
     });
 
     const requests = new Map();
+    const categoryLimit = 8;
 
     function fetchJSON(path) {
       if (!requests.has(path)) {
@@ -540,6 +541,9 @@
     async function renderThemes() {
       const data = await fetchJSON("/api/themes");
       const raw = await fetchJSON("/api/sentiment-trends");
+      const visibleData = data.slice(0, categoryLimit);
+      document.getElementById("themes-summary").textContent =
+        `Top ${visibleData.length} of ${data.length} themes. Hover for an exact value; click for related updates.`;
 
       const plot = Plot.plot({
         ...chartOptions(
@@ -550,7 +554,7 @@
         marginLeft: 120,
         marks: [
           Plot.ruleX([0], { ariaHidden: true }),
-          Plot.barX(data, {
+          Plot.barX(visibleData, {
             x: "count",
             y: "theme",
             fill: "#457b9d",
@@ -580,6 +584,9 @@
     async function renderBlockers() {
       const data = await fetchJSON("/api/blockers");
       const raw = await fetchJSON("/api/sentiment-trends");
+      const visibleData = data.slice(0, categoryLimit);
+      document.getElementById("blockers-summary").textContent =
+        `Top ${visibleData.length} of ${data.length} blockers. Hover for an exact value; click for related updates.`;
 
       const plot = Plot.plot({
         ...chartOptions(
@@ -590,7 +597,7 @@
         marginLeft: 120,
         marks: [
           Plot.ruleX([0], { ariaHidden: true }),
-          Plot.barX(data, {
+          Plot.barX(visibleData, {
             x: "count",
             y: "blocker",
             fill: colours.negative,
