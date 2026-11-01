@@ -3,7 +3,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-# This workflow will install Deno then run `deno lint` and `deno test`.
+# Format repository PR branches, then validate the result on each supported OS.
 # For more information see: https://github.com/denoland/setup-deno
 
 name: Deno
@@ -16,8 +16,57 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: deno-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  format:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref !=
+      github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      head_sha: ${{ steps.format.outputs.head_sha }}
+
+    steps:
+      - name: Check out PR source
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2.0.5
+        with:
+          deno-version: v2.x
+
+      - name: Format and commit changes
+        id: format
+        shell: bash
+        env:
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          deno fmt
+          deno fmt --check
+          if ! git diff --quiet; then
+            git add --update
+            git -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -m 'style: apply deno fmt'
+            git push origin "HEAD:refs/heads/$PR_HEAD_REF"
+          fi
+          printf 'head_sha=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
   test:
+    needs: format
+    if: >-
+      ${{ !cancelled() &&
+      (needs.format.result == 'success' || needs.format.result == 'skipped') }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -26,6 +75,22 @@ jobs:
     steps:
       - name: Setup repo
         uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.format.outputs.head_sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Merge PR base for integration checks
+        if: >-
+          github.event_name == 'pull_request' &&
+          needs.format.outputs.head_sha != ''
+        shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git -c user.name='github-actions[bot]' \
+            -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            merge --no-commit --no-ff "$PR_BASE_SHA"
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2.0.5
