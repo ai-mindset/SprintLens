@@ -225,7 +225,7 @@
       display: inline-block;
       padding: 0.18rem 0.55rem;
       border-radius: 999px;
-      font-size: 0.72rem;
+      font-size: 0.85rem;
       font-weight: 650;
       letter-spacing: 0.01em;
       margin-right: 0.4rem;
@@ -366,17 +366,15 @@
       <section class="grid">
         <div>
           <article>
-            <h2>Recurring themes</h2>
-            <p class="pico-color-grey-500"
-              id="themes-summary">Hover for an exact value; click for related updates.</p>
+            <h3>Recurring themes</h3>
+            <p id="themes-summary">Hover for an exact value; click for related updates.</p>
             <div class="chart" id="themes-chart"></div>
           </article>
         </div>
         <div>
           <article>
-            <h2>Recurring blockers</h2>
-            <p class="pico-color-grey-500"
-              id="blockers-summary">Hover for an exact value; click for related updates.</p>
+            <h3>Recurring blockers</h3>
+            <p id="blockers-summary">Hover for an exact value; click for related updates.</p>
             <div class="chart" id="blockers-chart"></div>
           </article>
         </div>
@@ -385,13 +383,13 @@
       <section class="grid">
         <div>
           <article>
-            <h2>Action item follow-through</h2>
+            <h3>Action item follow-through</h3>
             <div class="chart" id="actions-chart"></div>
           </article>
         </div>
         <div>
           <article>
-            <h2>Action follow-through by sprint</h2>
+            <h3>Action follow-through by sprint</h3>
             <div class="chart" id="actions-sprint-chart"></div>
           </article>
         </div>
@@ -418,12 +416,12 @@
     <script type="module">
     const colours = {
       positive: "#2a9d8f",
-      neutral: "#8d99ae",
-      negative: "#e76f51",
+      neutral: "#6B7280",
+      negative: "#DC2626",
       done: "#2a9d8f",
-      partial: "#e9c46a",
-      not_done: "#e76f51",
-      dropped: "#aaaaaa",
+      partial: "#D97706",
+      not_done: "#DC2626",
+      dropped: "#9CA3AF",
     };
 
     const statusLabels = {
@@ -545,9 +543,13 @@
       return {
         width: chartWidth(id),
         height: 300,
+        marginLeft: 60,
+        marginBottom: 40,
         ariaLabel,
         ariaDescription,
         style: {
+          fontSize: "15px",
+          fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
           overflow: "visible",
           color: "var(--pico-color)",
           background: "transparent",
@@ -727,9 +729,21 @@
           "Sentiment over time",
           "Stacked bars show the number of positive, neutral, and negative updates on each date.",
         ),
-        marginBottom: 60,
-        x: { type: "band", label: "Date", tickRotate: -45 },
-        y: { label: "Updates", grid: true, nice: true },
+        marginBottom: 80,
+        x: {
+          type: "band",
+          label: "Date",
+          tickRotate: -45,
+          tickPadding: 8,
+          tickSize: 8,
+        },
+        y: {
+          label: "Updates",
+          grid: true,
+          nice: true,
+          tickPadding: 10,
+          tickSize: 8,
+        },
         color: {
           domain: ["positive", "neutral", "negative"],
           range: [colours.positive, colours.neutral, colours.negative],
@@ -777,9 +791,15 @@
           "Sentiment by sprint",
           "Bars compare positive, neutral, and negative update counts for each sprint.",
         ),
-        marginBottom: 60,
-        x: { type: "band", label: "Sprint" },
-        y: { label: "Updates", grid: true, nice: true },
+        marginBottom: 80,
+        x: { type: "band", label: "Sprint", tickPadding: 8, tickSize: 8 },
+        y: {
+          label: "Updates",
+          grid: true,
+          nice: true,
+          tickPadding: 10,
+          tickSize: 8,
+        },
         color: {
           domain: ["positive", "neutral", "negative"],
           range: [colours.positive, colours.neutral, colours.negative],
@@ -833,7 +853,7 @@
           "Recurring themes",
           "Horizontal bars rank themes by the number of updates in which each theme appears.",
         ),
-        marginLeft: 120,
+        marginLeft: 160,
         marks: [
           Plot.ruleX([0], { ariaHidden: true }),
           Plot.barX(visibleData, {
@@ -851,7 +871,13 @@
               `${d.theme}: ${d.count} update${d.count === 1 ? "" : "s"}`,
           }),
         ],
-        x: { label: "Updates", grid: true, nice: true },
+        x: {
+          label: "Updates",
+          grid: true,
+          nice: true,
+          tickPadding: 10,
+          tickSize: 8,
+        },
         y: { label: null },
       });
 
@@ -875,13 +901,13 @@
           "Recurring blockers",
           "Horizontal bars rank blockers by the number of updates in which each blocker appears.",
         ),
-        marginLeft: 120,
+        marginLeft: 160,
         marks: [
           Plot.ruleX([0], { ariaHidden: true }),
           Plot.barX(visibleData, {
             x: "count",
             y: "blocker",
-            fill: colours.negative,
+            fill: "var(--pico-color-grey-500)",
             sort: { y: "-x" },
             className: "clickable-bar",
             channels: { Blocker: "blocker", Updates: "count" },
@@ -893,7 +919,13 @@
               `${d.blocker}: ${d.count} update${d.count === 1 ? "" : "s"}`,
           }),
         ],
-        x: { label: "Updates", grid: true, nice: true },
+        x: {
+          label: "Updates",
+          grid: true,
+          nice: true,
+          tickPadding: 10,
+          tickSize: 8,
+        },
         y: { label: null },
       });
 
@@ -930,12 +962,18 @@
           "Action item follow-through",
           "Bars show the number of action items in each follow-through status.",
         ),
+        color: {
+          domain: ["done", "partial", "not_done", "dropped"],
+          range: [colours.done, colours.partial, colours.not_done, colours.dropped],
+          legend: true,
+          tickFormat: (d) => statusLabels[d] ?? d,
+        },
         marks: [
           Plot.ruleY([0], { ariaHidden: true }),
           Plot.barY(chartData, {
             x: "status",
             y: "count",
-            fill: (d) => colours[d.status] ?? "#999",
+            fill: "status",
             className: "clickable-bar",
             channels: {
               Status: (d) => statusLabels[d.status] ?? d.status,
@@ -953,12 +991,23 @@
           Plot.text(chartData, {
             x: "status",
             y: "count",
-            dy: -6,
+            dy: -8,
             text: (d) => d.count,
           }),
         ],
-        x: { label: "Status", tickFormat: (d) => statusLabels[d] ?? d },
-        y: { label: "Actions", grid: true, nice: true },
+        x: {
+          label: "Status",
+          tickFormat: (d) => statusLabels[d] ?? d,
+          tickPadding: 10,
+          tickSize: 8,
+        },
+        y: {
+          label: "Actions",
+          grid: true,
+          nice: true,
+          tickPadding: 10,
+          tickSize: 8,
+        },
       });
 
       mountChart("actions-chart", plot);
@@ -980,9 +1029,15 @@
           "Action follow-through by sprint",
           "Bars compare action item status counts within each sprint.",
         ),
-        marginBottom: 60,
-        x: { type: "band", label: "Sprint" },
-        y: { label: "Actions", grid: true, nice: true },
+        marginBottom: 80,
+        x: { type: "band", label: "Sprint", tickPadding: 8, tickSize: 8 },
+        y: {
+          label: "Actions",
+          grid: true,
+          nice: true,
+          tickPadding: 10,
+          tickSize: 8,
+        },
         color: {
           domain: ["done", "partial", "not_done", "dropped"],
           range: [colours.done, colours.partial, colours.not_done, colours.dropped],
