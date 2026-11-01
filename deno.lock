@@ -8,6 +8,9 @@
     "jsr:@std/path@*": "1.1.6",
     "jsr:@std/path@^1.1.5": "1.1.6",
     "npm:@observablehq/plot@*": "0.6.17",
+    "npm:@observablehq/plot@0.6.17": "0.6.17",
+    "npm:@picocss/pico@2.1.1": "2.1.1",
+    "npm:d3@7.9.0": "7.9.0",
     "npm:sqlite-vec@*": "0.1.9",
     "npm:zod-to-json-schema@*": "3.25.2_zod@4.4.3",
     "npm:zod@*": "4.4.3"
@@ -44,6 +47,9 @@
         "interval-tree-1d",
         "isoformat"
       ]
+    },
+    "@picocss/pico@2.1.1": {
+      "integrity": "sha512-kIDugA7Ps4U+2BHxiNHmvgPIQDWPDU4IeU6TNRdvXQM1uZX+FibqDQT2xUOnnO2yq/LUHcwnGlu1hvf4KfXnMg=="
     },
     "binary-search-bounds@2.0.5": {
       "integrity": "sha512-H0ea4Fd3lS1+sTEB2TgcLoK21lLhwEJzlQv3IN47pJS976Gx4zoWe0ak3q+uYh60ppQxg9F16Ri4tS1sfD4+jA=="
@@ -338,6 +344,8 @@
       "jsr:@std/fs@*",
       "jsr:@std/path@*",
       "npm:@observablehq/plot@*",
+      "npm:@picocss/pico@2.1.1",
+      "npm:d3@7.9.0",
       "npm:sqlite-vec@*",
       "npm:zod-to-json-schema@*",
       "npm:zod@*"

@@ -267,7 +267,7 @@ Deno.test("dashboard serves HTML and returns a plain 404", async () => {
   try {
     const handler = createDashboardHandler(
       db,
-      () => Promise.resolve("<h1>Dashboard</h1>"),
+      { readIndex: () => Promise.resolve("<h1>Dashboard</h1>") },
     );
     const home = await handler(new Request("http://app/"));
     assertEquals(home.status, 200);
@@ -284,4 +284,38 @@ Deno.test("dashboard serves HTML and returns a plain 404", async () => {
   } finally {
     dispose();
   }
+});
+
+Deno.test("dashboard serves bundled assets with immutable caching", async () => {
+  const { db } = testDatabase();
+  const handler = createDashboardHandler(db, {
+    readAsset: () => Promise.resolve(new TextEncoder().encode("asset body")),
+  });
+  const response = await handler(new Request("http://app/vendor/pico.min.css"));
+  assertEquals(response.status, 200);
+  assertEquals(response.headers.get("content-type"), "text/css; charset=utf-8");
+  assertEquals(
+    response.headers.get("cache-control"),
+    "public, max-age=31536000, immutable",
+  );
+  assertEquals(await response.text(), "asset body");
+});
+
+Deno.test("dashboard exposes health and reports unavailable data APIs", async () => {
+  const health = { status: "error", database: { ok: false } };
+  const handler = createDashboardHandler(null, {
+    getHealth: () => Promise.resolve(health),
+    readIndex: () => Promise.resolve("dashboard"),
+  });
+  const healthResponse = await handler(new Request("http://app/api/health"));
+  assertEquals(healthResponse.status, 200);
+  assertEquals(await healthResponse.json(), health);
+
+  const dataResponse = await handler(
+    new Request("http://app/api/sentiment-trends"),
+  );
+  assertEquals(dataResponse.status, 503);
+  assertEquals(await dataResponse.json(), {
+    error: "SprintLens could not open its database",
+  });
 });

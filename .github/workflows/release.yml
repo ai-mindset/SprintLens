@@ -1,0 +1,71 @@
+name: Desktop release
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact: dist/x86_64-pc-windows-msvc/SprintLens/
+          - os: macos-15-intel
+            target: x86_64-apple-darwin
+            artifact: dist/x86_64-apple-darwin/SprintLens.app/
+          - os: macos-14
+            target: aarch64-apple-darwin
+            artifact: dist/aarch64-apple-darwin/SprintLens.app/
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact: dist/x86_64-unknown-linux-gnu/SprintLens.AppImage
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            artifact: dist/aarch64-unknown-linux-gnu/SprintLens.AppImage
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2.0.5
+        with:
+          deno-version: v2.x
+
+      - name: Build desktop bundle
+        run: deno task bundle ${{ matrix.target }}
+
+      - name: Smoke test Windows bundle
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          SPRINTLENS_DB_PATH: ${{ runner.temp }}/sprintlens-smoke.db
+        run: '& "dist\${{ matrix.target }}\SprintLens\SprintLens.bat" --smoke-test'
+
+      - name: Smoke test macOS bundle
+        if: runner.os == 'macOS'
+        env:
+          SPRINTLENS_DB_PATH: ${{ runner.temp }}/sprintlens-smoke.db
+        run: dist/${{ matrix.target }}/SprintLens.app/Contents/MacOS/SprintLens --smoke-test
+
+      - name: Smoke test Linux x64 bundle
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: "1"
+          SPRINTLENS_DB_PATH: ${{ runner.temp }}/sprintlens-smoke.db
+        run: dist/${{ matrix.target }}/SprintLens.AppImage --smoke-test
+
+      - name: Upload desktop bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: SprintLens-${{ matrix.target }}
+          path: ${{ matrix.artifact }}
+          if-no-files-found: error

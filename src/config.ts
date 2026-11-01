@@ -1,27 +1,48 @@
 /**
  * SprintLens configuration — single source of truth.
  *
- * AI provider examples (all OpenAI-compatible):
+ * AI provider settings come from SPRINTLENS_* environment variables.
+ * Examples (all OpenAI-compatible):
  *
- *   // Ollama (local, default)
- *   ai: { baseURL: "http://localhost:11434/v1", chatModel: "qwen3.6:27b", embedModel: "qwen3-embedding:8b" }
+ *   SPRINTLENS_AI_BASE_URL=http://localhost:11434/v1
+ *   SPRINTLENS_CHAT_MODEL=qwen3.6:27b
+ *   SPRINTLENS_EMBED_MODEL=qwen3-embedding:8b
  *
- *   // Mistral
- *   ai: { baseURL: "https://api.mistral.ai/v1", apiKey: "<key>", chatModel: "mistral-large-latest", embedModel: "mistral-embed" }
- *
- *   // Azure OpenAI — baseURL includes deployment + API version
- *   ai: { baseURL: "https://<resource>.openai.azure.com/openai/deployments/<deployment>/chat", apiKey: "<key>", chatModel: "gpt-4o", embedModel: "text-embedding-3-large" }
+ *   SPRINTLENS_AI_BASE_URL=https://api.mistral.ai/v1
+ *   SPRINTLENS_API_KEY=<key>
+ *   SPRINTLENS_CHAT_MODEL=mistral-large-latest
+ *   SPRINTLENS_EMBED_MODEL=mistral-embed
  */
+
+import { join } from "@std/path";
+import { getAppDataDirectory, readEnvironment } from "./app_paths.ts";
+
+const env = readEnvironment();
+const dataDir = (() => {
+  try {
+    return getAppDataDirectory(Deno.build.os, env);
+  } catch {
+    // Permission-free unit tests cannot read HOME. Runtime tasks use
+    // --allow-env and therefore resolve the platform-specific directory.
+    return join(Deno.cwd(), ".sprintlens");
+  }
+})();
+
+function positiveInteger(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
 
 export const config = {
   sqliteVecVersion: "0.1.9",
-  dbPath: "data/sprintlens.db",
-  embedDim: 4096, // qwen3-embedding:8b - verify and adjust for other models
+  dataDir,
+  dbPath: env.SPRINTLENS_DB_PATH ?? join(dataDir, "sprintlens.db"),
+  embedDim: positiveInteger(env.SPRINTLENS_EMBED_DIM, 4096),
   ai: {
-    baseURL: "http://localhost:11434/v1",
-    apiKey: undefined as string | undefined,
-    chatModel: "qwen3.6:27b",
-    embedModel: "qwen3-embedding:8b",
+    baseURL: env.SPRINTLENS_AI_BASE_URL ?? "http://localhost:11434/v1",
+    apiKey: env.SPRINTLENS_API_KEY,
+    chatModel: env.SPRINTLENS_CHAT_MODEL ?? "qwen3.6:27b",
+    embedModel: env.SPRINTLENS_EMBED_MODEL ?? "qwen3-embedding:8b",
   },
-  port: 8765,
+  port: positiveInteger(env.SPRINTLENS_PORT, 8765),
 };

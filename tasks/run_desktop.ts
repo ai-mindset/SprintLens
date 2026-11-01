@@ -1,4 +1,5 @@
 import { basename, join } from "@std/path";
+import { desktopBuildArgs } from "./desktop_build.ts";
 
 const projectRoot = join(import.meta.dirname!, "..");
 const buildDir = await Deno.makeTempDir({ prefix: "sprintlens-desktop-" });
@@ -13,14 +14,7 @@ function commandFailure(command: string, code: number): Error {
 
 try {
   const build = new Deno.Command(Deno.execPath(), {
-    args: [
-      "desktop",
-      "--allow-all",
-      `--output=${output}`,
-      "--include=index.html",
-      "--include=data",
-      "desktop.ts",
-    ],
+    args: desktopBuildArgs({ output }),
     cwd: projectRoot,
     stdin: "inherit",
     stdout: "inherit",
