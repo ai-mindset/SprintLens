@@ -58,6 +58,7 @@
         var(--app-background);
     }
     main.container {
+      max-width: 1600px;
       padding-top: 1.5rem;
     }
     .app-header {
@@ -96,6 +97,105 @@
     }
     .theme-toggle:hover {
       background: var(--surface-muted);
+    }
+    .app-shell {
+      display: grid;
+      grid-template-columns: 11rem minmax(0, 1fr);
+      align-items: start;
+      gap: 1.25rem;
+    }
+    .app-shell.has-inspector {
+      grid-template-columns: 11rem minmax(0, 1fr) minmax(18rem, 23rem);
+    }
+    .app-shell.has-inspector .chart-grid {
+      grid-template-columns: 1fr;
+    }
+    .app-sidebar {
+      position: sticky;
+      top: 1rem;
+      padding: 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .nav-label {
+      margin: 0.35rem 0.6rem 0.45rem;
+      color: var(--pico-muted-color);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .primary-nav ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .primary-nav li {
+      margin: 0;
+      padding: 0;
+    }
+    .primary-nav a {
+      display: flex;
+      min-height: 2.75rem;
+      align-items: center;
+      padding: 0.55rem 0.65rem;
+      border-radius: 9px;
+      color: var(--pico-muted-color);
+      font-size: 0.82rem;
+      font-weight: 650;
+      text-decoration: none;
+    }
+    .primary-nav a:hover {
+      background: var(--surface-muted);
+      color: var(--text-strong);
+    }
+    .primary-nav a[aria-current="page"] {
+      background: var(--accent-soft);
+      color: var(--primary);
+    }
+    .view-stage {
+      min-width: 0;
+    }
+    .app-view[hidden],
+    .detail-inspector[hidden] {
+      display: none;
+    }
+    .view-header {
+      margin-bottom: 1.25rem;
+    }
+    .view-header h2 {
+      margin: 0;
+      color: var(--text-strong);
+      font-size: clamp(1.5rem, 3vw, 2rem);
+    }
+    .view-header p {
+      max-width: 48rem;
+      margin: 0.3rem 0 0;
+      color: var(--pico-muted-color);
+    }
+    .data-scope {
+      font-size: 0.82rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    .chart-card {
+      min-width: 0;
+      margin: 0;
+    }
+    .chart-card h3 {
+      margin-bottom: 0.35rem;
+    }
+    .chart-help {
+      min-height: 2.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--pico-muted-color);
+      font-size: 0.8rem;
     }
     section {
       margin-bottom: 2rem;
@@ -148,6 +248,7 @@
       line-height: 1.7;
     }
     .chart {
+      width: 100%;
       min-height: 280px;
     }
     .chart figure {
@@ -173,27 +274,108 @@
     .clickable-bar:hover {
       opacity: 0.82;
     }
-    #quotes,
+    #signals,
     #action-list,
     #detail-content {
       display: grid;
       gap: 0.85rem;
     }
-    #quotes article,
+    #signals article,
     #action-list article,
     #detail-content article {
       margin: 0;
       box-shadow: none;
     }
-    #detail-panel {
-      margin-top: 2rem;
-      padding: 1.25rem;
+    .supporting-data {
+      margin: 0;
       border: 1px solid var(--border);
-      border-radius: 16px;
-      background: var(--surface-muted);
+      border-radius: 14px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
     }
-    #detail-panel article {
-      margin-bottom: 1rem;
+    .supporting-data > summary,
+    .chart-data > summary {
+      padding: 1rem 1.15rem;
+      color: var(--text-strong);
+      font-weight: 700;
+    }
+    .evidence-count {
+      margin-left: 0.35rem;
+      color: var(--pico-muted-color);
+      font-size: 0.78rem;
+      font-weight: 500;
+    }
+    .evidence-content,
+    .chart-data-content {
+      padding: 0 1.15rem 1.15rem;
+    }
+    .chart-data {
+      margin-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+    .chart-data > summary {
+      padding: 0.75rem 0;
+      font-size: 0.8rem;
+    }
+    .chart-data-content {
+      padding: 0;
+      overflow-x: auto;
+    }
+    .chart-data table {
+      margin: 0;
+      font-size: 0.78rem;
+    }
+    .compact-action {
+      width: auto;
+      min-height: 2rem;
+      margin: 0;
+      padding: 0.3rem 0.55rem;
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+    .action-list-toggle {
+      width: auto;
+      margin: 1rem 0 0;
+      padding: 0.45rem 0.75rem;
+      font-size: 0.8rem;
+    }
+    .detail-inspector {
+      position: sticky;
+      top: 1rem;
+      max-height: calc(100vh - 2rem);
+      overflow: auto;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .inspector-header {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.85rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .inspector-header h2 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+    .inspector-close {
+      width: 2.25rem;
+      min-width: 2.25rem;
+      height: 2.25rem;
+      margin: 0;
+      padding: 0;
+      border-radius: 999px;
+      font-size: 1.25rem;
+      line-height: 1;
     }
     .startup-status {
       margin-bottom: 1.5rem;
@@ -277,6 +459,44 @@
       background: #493b1d;
       color: #f2d27c;
     }
+    @media (max-width: 1250px) {
+      .chart-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 900px) {
+      .app-shell,
+      .app-shell.has-inspector {
+        grid-template-columns: 1fr;
+      }
+      .app-sidebar,
+      .detail-inspector {
+        position: static;
+        max-height: none;
+      }
+      .primary-nav ul {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.25rem;
+      }
+      .detail-inspector {
+        scroll-margin-top: 1rem;
+      }
+    }
+    .zoomed-layout .app-shell,
+    .zoomed-layout .app-shell.has-inspector {
+      grid-template-columns: 1fr;
+    }
+    .zoomed-layout .app-sidebar,
+    .zoomed-layout .detail-inspector {
+      position: static;
+      max-height: none;
+    }
+    .zoomed-layout .primary-nav ul {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.25rem;
+    }
     @media (max-width: 576px) {
       .app-header {
         align-items: flex-start;
@@ -317,7 +537,7 @@
     </style>
   </head>
   <body>
-    <main class="container">
+    <main class="container" id="top">
       <header class="app-header">
         <div class="brand">
           <h1>🏃🔍 SprintLens</h1>
@@ -341,76 +561,146 @@
         </details>
       </article>
 
-      <section id="summary"></section>
+      <div class="app-shell" id="app-shell">
+        <aside class="app-sidebar">
+          <nav class="primary-nav" aria-label="SprintLens views">
+            <p class="nav-label">Explore</p>
+            <ul>
+              <li><a href="#overview" aria-current="page">Overview</a></li>
+              <li><a href="#sentiment">Sentiment</a></li>
+              <li><a href="#themes-blockers">Themes &amp; blockers</a></li>
+              <li><a href="#follow-through">Follow-through</a></li>
+            </ul>
+          </nav>
+        </aside>
 
-      <section>
-        <h2>Auto-generated insights</h2>
-        <article id="insights"></article>
-      </section>
+        <div class="view-stage" id="view-stage">
+          <section class="app-view" id="overview" data-view>
+            <header class="view-header">
+              <h2 tabindex="-1">Overview</h2>
+              <p class="data-scope" id="data-scope">Loading data scope…</p>
+            </header>
+            <section id="summary" aria-label="Dashboard summary"></section>
+            <section>
+              <h3>Sprint summary</h3>
+              <article id="insights"></article>
+            </section>
+            <details class="supporting-data">
+              <summary>Latest positive and negative updates <span
+                  class="evidence-count" id="signals-count"></span></summary>
+              <div class="evidence-content" id="signals"></div>
+            </details>
+          </section>
 
-      <section class="grid">
-        <div>
-          <article>
-            <h3>Sentiment over time</h3>
-            <div class="chart" id="sentiment-chart"></div>
-          </article>
+          <section class="app-view" id="sentiment" data-view hidden>
+            <header class="view-header">
+              <h2 tabindex="-1">Sentiment</h2>
+              <p>Compare the balance of positive, neutral, and negative updates over time.</p>
+            </header>
+            <div class="chart-grid">
+              <article class="chart-card">
+                <h3>Sentiment over time</h3>
+                <p
+                  class="chart-help">Hover for exact values, or open the data table below.</p>
+                <div class="chart" id="sentiment-chart"></div>
+                <details class="chart-data">
+                  <summary>View chart data</summary>
+                  <div class="chart-data-content" id="sentiment-data"></div>
+                </details>
+              </article>
+              <article class="chart-card">
+                <h3>Sentiment by sprint</h3>
+                <p
+                  class="chart-help">Compare the sentiment mix between sprints.</p>
+                <div class="chart" id="sentiment-sprint-chart"></div>
+                <details class="chart-data">
+                  <summary>View chart data</summary>
+                  <div class="chart-data-content"
+                    id="sentiment-sprint-data"></div>
+                </details>
+              </article>
+            </div>
+          </section>
+
+          <section class="app-view" id="themes-blockers" data-view hidden>
+            <header class="view-header">
+              <h2 tabindex="-1">Themes &amp; blockers</h2>
+              <p>Identify recurring topics and inspect the updates behind them.</p>
+            </header>
+            <div class="chart-grid">
+              <article class="chart-card">
+                <h3>Recurring themes</h3>
+                <p class="chart-help" id="themes-summary">Loading themes…</p>
+                <div class="chart" id="themes-chart"></div>
+                <details class="chart-data">
+                  <summary>View chart data and related updates</summary>
+                  <div class="chart-data-content" id="themes-data"></div>
+                </details>
+              </article>
+              <article class="chart-card">
+                <h3>Recurring blockers</h3>
+                <p class="chart-help"
+                  id="blockers-summary">Loading blockers…</p>
+                <div class="chart" id="blockers-chart"></div>
+                <details class="chart-data">
+                  <summary>View chart data and related updates</summary>
+                  <div class="chart-data-content" id="blockers-data"></div>
+                </details>
+              </article>
+            </div>
+          </section>
+
+          <section class="app-view" id="follow-through" data-view hidden>
+            <header class="view-header">
+              <h2 tabindex="-1">Follow-through</h2>
+              <p>Review whether retrospective actions translated into completed work.</p>
+            </header>
+            <div class="chart-grid">
+              <article class="chart-card">
+                <h3>Action item status</h3>
+                <p
+                  class="chart-help">Select a status to inspect its action items.</p>
+                <div class="chart" id="actions-chart"></div>
+                <details class="chart-data">
+                  <summary>View chart data and action items</summary>
+                  <div class="chart-data-content" id="actions-data"></div>
+                </details>
+              </article>
+              <article class="chart-card">
+                <h3>Action status by sprint</h3>
+                <p
+                  class="chart-help">Compare follow-through outcomes between sprints.</p>
+                <div class="chart" id="actions-sprint-chart"></div>
+                <details class="chart-data">
+                  <summary>View chart data</summary>
+                  <div class="chart-data-content"
+                    id="actions-sprint-data"></div>
+                </details>
+              </article>
+            </div>
+            <details class="supporting-data">
+              <summary>Recent action items <span class="evidence-count"
+                  id="actions-count"></span></summary>
+              <div class="evidence-content">
+                <div id="action-list"></div>
+                <button class="outline action-list-toggle"
+                  id="action-list-toggle"
+                  type="button" aria-controls="action-list" hidden></button>
+              </div>
+            </details>
+          </section>
         </div>
-        <div>
-          <article>
-            <h3>Sentiment by sprint</h3>
-            <div class="chart" id="sentiment-sprint-chart"></div>
-          </article>
-        </div>
-      </section>
 
-      <section class="grid">
-        <div>
-          <article>
-            <h3>Recurring themes</h3>
-            <p
-              id="themes-summary">Hover for an exact value; click for related updates.</p>
-            <div class="chart" id="themes-chart"></div>
-          </article>
-        </div>
-        <div>
-          <article>
-            <h3>Recurring blockers</h3>
-            <p
-              id="blockers-summary">Hover for an exact value; click for related updates.</p>
-            <div class="chart" id="blockers-chart"></div>
-          </article>
-        </div>
-      </section>
-
-      <section class="grid">
-        <div>
-          <article>
-            <h3>Action item follow-through</h3>
-            <div class="chart" id="actions-chart"></div>
-          </article>
-        </div>
-        <div>
-          <article>
-            <h3>Action follow-through by sprint</h3>
-            <div class="chart" id="actions-sprint-chart"></div>
-          </article>
-        </div>
-      </section>
-
-      <section>
-        <h2>Notable quotes</h2>
-        <div id="quotes"></div>
-      </section>
-
-      <section>
-        <h2>Recent action items</h2>
-        <div id="action-list"></div>
-      </section>
-
-      <section id="detail-panel" style="display:none;">
-        <h2>Details</h2>
-        <div id="detail-content"></div>
-      </section>
+        <aside class="detail-inspector" id="detail-inspector" hidden
+          aria-labelledby="detail-title">
+          <header class="inspector-header">
+            <h2 id="detail-title" tabindex="-1">Supporting evidence</h2>
+            <button class="secondary outline inspector-close" id="detail-close"
+              type="button" aria-label="Close supporting evidence">×</button>
+          </header>
+          <div id="detail-content"></div>
+        </aside>
+      </div>
       <p class="visually-hidden" id="zoom-announcement" role="status"
         aria-live="polite"></p>
     </main>
@@ -445,7 +735,6 @@
         nextTheme.slice(1)
       } mode`;
       themeToggle.setAttribute("aria-label", `Switch to ${nextTheme} mode`);
-      themeToggle.setAttribute("aria-pressed", String(isDark));
     }
 
     themeToggle.addEventListener("click", () => {
@@ -462,6 +751,78 @@
     });
     updateThemeToggle();
 
+    const viewLinks = [...document.querySelectorAll(".primary-nav a")];
+    const views = [...document.querySelectorAll("[data-view]")];
+    const validViews = new Set(views.map((view) => view.id));
+    let activeView = "overview";
+    let focusViewHeading = false;
+    let primaryNavigation = false;
+
+    function routeFromHash() {
+      const [candidate, kind, encodedValue] = location.hash.slice(1).split("/");
+      let detail = null;
+      if (kind && encodedValue) {
+        try {
+          detail = `${kind}/${decodeURIComponent(encodedValue)}`;
+        } catch {
+          detail = null;
+        }
+      }
+      return {
+        view: validViews.has(candidate) ? candidate : "overview",
+        detail,
+      };
+    }
+
+    async function activateRoute({ focus = false, fromNavigation = false } = {}) {
+      const route = routeFromHash();
+      const previousView = activeView;
+      activeView = route.view;
+      for (const view of views) view.hidden = view.id !== activeView;
+      for (const link of viewLinks) {
+        if (link.hash === `#${activeView}`) {
+          link.setAttribute("aria-current", "page");
+        } else {
+          link.removeAttribute("aria-current");
+        }
+      }
+      await renderView(activeView);
+      if (route.detail) {
+        restoreDetail(route.detail);
+      } else {
+        hideDetails({
+          restoreFocus: !fromNavigation && !detailInspector.hidden &&
+            previousView === activeView,
+          updateLocation: false,
+        });
+      }
+      if (focus) document.querySelector(`#${activeView} h2`).focus();
+    }
+
+    for (const link of viewLinks) {
+      link.addEventListener("click", (event) => {
+        focusViewHeading = event.detail === 0;
+        primaryNavigation = true;
+        if (location.hash === link.hash) {
+          event.preventDefault();
+          activateRoute({
+            focus: focusViewHeading,
+            fromNavigation: true,
+          });
+          focusViewHeading = false;
+          primaryNavigation = false;
+        }
+      });
+    }
+    addEventListener("hashchange", () => {
+      activateRoute({
+        focus: focusViewHeading,
+        fromNavigation: primaryNavigation,
+      });
+      focusViewHeading = false;
+      primaryNavigation = false;
+    });
+
     const zoomAnnouncement = document.getElementById("zoom-announcement");
     const zoomStep = 0.1;
     const minZoom = 0.75;
@@ -476,6 +837,7 @@
     function applyZoom(value, announce = true) {
       appZoom = Math.min(maxZoom, Math.max(minZoom, Math.round(value * 10) / 10));
       document.documentElement.style.zoom = String(appZoom);
+      document.documentElement.classList.toggle("zoomed-layout", appZoom >= 1.5);
       try {
         localStorage.setItem("sprintlens-zoom", String(appZoom));
       } catch {
@@ -502,6 +864,7 @@
     });
 
     const requests = new Map();
+    const detailRegistry = new Map();
     const categoryLimit = 8;
 
     function fetchJSON(path) {
@@ -532,7 +895,7 @@
 
     function chartWidth(id) {
       return Math.max(
-        320,
+        240,
         Math.floor(document.getElementById(id).clientWidth || 640),
       );
     }
@@ -542,9 +905,10 @@
     }
 
     function chartOptions(id, ariaLabel, ariaDescription) {
+      const width = chartWidth(id);
       return {
-        width: chartWidth(id),
-        height: 300,
+        width,
+        height: Math.max(240, Math.min(300, Math.round(width * 0.62))),
         marginLeft: 60,
         marginBottom: 40,
         ariaLabel,
@@ -561,6 +925,7 @@
 
     function addFocusedClick(plot, callback) {
       let focused = null;
+      if (!plot.hasAttribute("tabindex")) plot.tabIndex = -1;
       plot.addEventListener("input", () => focused = plot.value);
       plot.addEventListener("click", () => {
         if (focused) callback(focused);
@@ -573,6 +938,41 @@
       if (options.text !== undefined) node.textContent = String(options.text);
       node.append(...children);
       return node;
+    }
+
+    function renderTable(id, columns, rows, action) {
+      const headerCells = columns.map(({ label }) => {
+        const cell = element("th", { text: label });
+        cell.scope = "col";
+        return cell;
+      });
+      if (action) {
+        const cell = element("th", { text: action.heading });
+        cell.scope = "col";
+        headerCells.push(cell);
+      }
+
+      const bodyRows = rows.map((row) => {
+        const cells = columns.map(({ value }) =>
+          element("td", { text: value(row) })
+        );
+        if (action) {
+          const button = element("button", {
+            className: "outline compact-action",
+            text: action.label(row),
+          });
+          button.type = "button";
+          button.addEventListener("click", () => action.select(row, button));
+          cells.push(element("td", {}, [button]));
+        }
+        return element("tr", {}, cells);
+      });
+
+      const table = element("table", {}, [
+        element("thead", {}, [element("tr", {}, headerCells)]),
+        element("tbody", {}, bodyRows),
+      ]);
+      document.getElementById(id).replaceChildren(table);
     }
 
     function tag(value, type) {
@@ -621,9 +1021,10 @@
     // --- Summary ---
 
     async function renderSummary() {
-      const [sentiment, actions] = await Promise.all([
+      const [sentiment, actions, sprintSentiment] = await Promise.all([
         fetchJSON("/api/sentiment-trends"),
         fetchJSON("/api/action-status"),
+        fetchJSON("/api/sentiment-by-sprint"),
       ]);
 
       const total = sentiment.length;
@@ -643,26 +1044,47 @@
             actions.length * 100,
         )
         : 0;
-      const notDonePct = actions.length
-        ? Math.round(
-          actions.filter((a) => a.action_status === "not_done").length /
-            actions.length * 100,
-        )
-        : 0;
+      const outstanding =
+        actions.filter((a) => ["not_done", "partial"].includes(a.action_status))
+          .length;
+
+      const dates = sentiment.map((item) =>
+        new Date(parseInt(item.thread_ts) * 1000)
+      ).filter((date) => !Number.isNaN(date.valueOf())).sort((a, b) => a - b);
+      const sprintCount = new Set([
+        ...sprintSentiment.map((item) => item.sprint),
+        ...actions.map((item) => item.retro_name),
+      ]).size;
+      const dateRange = dates.length
+        ? `${dates[0].toLocaleDateString()}–${dates.at(-1).toLocaleDateString()}`
+        : "No dated updates";
+      document.getElementById("data-scope").textContent = `${sprintCount} sprint${
+        sprintCount === 1 ? "" : "s"
+      } · ${dateRange}`;
 
       const stats = [
-        { label: "Updates analysed", value: total },
-        { label: "Positive sentiment", value: `${posPct}%` },
-        { label: "Negative sentiment", value: `${negPct}%` },
-        { label: "Action items tracked", value: actions.length },
-        { label: "Actions completed", value: `${donePct}%` },
-        { label: "Actions not followed through", value: `${notDonePct}%` },
+        {
+          label: `${sprintCount} sprint${sprintCount === 1 ? "" : "s"} in scope`,
+          value: total,
+          detail: "Updates analysed",
+        },
+        {
+          label: `${negPct}% negative`,
+          value: `${posPct}%`,
+          detail: "Positive sentiment",
+        },
+        {
+          label: `${outstanding} outstanding of ${actions.length}`,
+          value: `${donePct}%`,
+          detail: "Actions completed",
+        },
       ];
 
       const cards = stats.map((stat) =>
         element("article", { className: "stat-card" }, [
           element("div", { className: "value", text: stat.value }),
-          element("div", { className: "label", text: stat.label }),
+          element("div", { className: "label", text: stat.detail }),
+          element("small", { text: stat.label }),
         ])
       );
       document.getElementById("summary").replaceChildren(
@@ -724,6 +1146,15 @@
       });
 
       const chartData = countBy(data, ["dateLabel", "sentiment"]);
+      renderTable(
+        "sentiment-data",
+        [
+          { label: "Date", value: (row) => row.dateLabel },
+          { label: "Sentiment", value: (row) => row.sentiment },
+          { label: "Updates", value: (row) => row.count },
+        ],
+        chartData,
+      );
 
       const plot = Plot.plot({
         ...chartOptions(
@@ -786,6 +1217,15 @@
 
     async function renderSentimentBySprint() {
       const data = await fetchJSON("/api/sentiment-by-sprint");
+      renderTable(
+        "sentiment-sprint-data",
+        [
+          { label: "Sprint", value: (row) => row.sprint },
+          { label: "Sentiment", value: (row) => row.sentiment },
+          { label: "Updates", value: (row) => row.count },
+        ],
+        data,
+      );
 
       const plot = Plot.plot({
         ...chartOptions(
@@ -847,7 +1287,41 @@
       const raw = await fetchJSON("/api/sentiment-trends");
       const visibleData = data.slice(0, categoryLimit);
       document.getElementById("themes-summary").textContent =
-        `Top ${visibleData.length} of ${data.length} themes. Hover for an exact value; click for related updates.`;
+        `Top ${visibleData.length} of ${data.length} themes. Select a bar or table action for supporting updates.`;
+
+      const selectTheme = (row, invoker) => {
+        const items = raw.filter((item) =>
+          item.themes && item.themes.includes(row.theme)
+        ).map(updateCard);
+        showDetails(
+          `Updates mentioning "${row.theme}"`,
+          items,
+          invoker,
+          `theme/${row.theme}`,
+        );
+      };
+      for (const row of visibleData) {
+        registerDetails(
+          `theme/${row.theme}`,
+          `Updates mentioning "${row.theme}"`,
+          raw.filter((item) => item.themes && item.themes.includes(row.theme)).map(
+            updateCard,
+          ),
+        );
+      }
+      renderTable(
+        "themes-data",
+        [
+          { label: "Theme", value: (row) => row.theme },
+          { label: "Updates", value: (row) => row.count },
+        ],
+        visibleData,
+        {
+          heading: "Supporting evidence",
+          label: (row) => `View ${row.theme}`,
+          select: selectTheme,
+        },
+      );
 
       const plot = Plot.plot({
         ...chartOptions(
@@ -884,10 +1358,7 @@
       });
 
       mountChart("themes-chart", plot);
-      addFocusedClick(plot, ({ theme }) => {
-        const matches = raw.filter((d) => d.themes && d.themes.includes(theme));
-        showDetails(`Updates mentioning "${theme}"`, matches.map(updateCard));
-      });
+      addFocusedClick(plot, (row) => selectTheme(row, plot));
     }
 
     async function renderBlockers() {
@@ -895,7 +1366,40 @@
       const raw = await fetchJSON("/api/sentiment-trends");
       const visibleData = data.slice(0, categoryLimit);
       document.getElementById("blockers-summary").textContent =
-        `Top ${visibleData.length} of ${data.length} blockers. Hover for an exact value; click for related updates.`;
+        `Top ${visibleData.length} of ${data.length} blockers. Select a bar or table action for supporting updates.`;
+
+      const selectBlocker = (row, invoker) => {
+        const items = raw.filter((item) =>
+          item.blockers && item.blockers.includes(row.blocker)
+        ).map(updateCard);
+        showDetails(
+          `Updates mentioning blocker "${row.blocker}"`,
+          items,
+          invoker,
+          `blocker/${row.blocker}`,
+        );
+      };
+      for (const row of visibleData) {
+        registerDetails(
+          `blocker/${row.blocker}`,
+          `Updates mentioning blocker "${row.blocker}"`,
+          raw.filter((item) => item.blockers && item.blockers.includes(row.blocker))
+            .map(updateCard),
+        );
+      }
+      renderTable(
+        "blockers-data",
+        [
+          { label: "Blocker", value: (row) => row.blocker },
+          { label: "Updates", value: (row) => row.count },
+        ],
+        visibleData,
+        {
+          heading: "Supporting evidence",
+          label: (row) => `View ${row.blocker}`,
+          select: selectBlocker,
+        },
+      );
 
       const plot = Plot.plot({
         ...chartOptions(
@@ -932,15 +1436,7 @@
       });
 
       mountChart("blockers-chart", plot);
-      addFocusedClick(plot, ({ blocker }) => {
-        const matches = raw.filter((d) =>
-          d.blockers && d.blockers.includes(blocker)
-        );
-        showDetails(
-          `Updates mentioning blocker "${blocker}"`,
-          matches.map(updateCard),
-        );
-      });
+      addFocusedClick(plot, (row) => selectBlocker(row, plot));
     }
 
     // --- Action charts ---
@@ -957,6 +1453,41 @@
         status,
         count,
       }));
+
+      const selectStatus = (row, invoker) => {
+        const items = data.filter((item) => item.action_status === row.status).map(
+          actionCard,
+        );
+        showDetails(
+          `Action items: ${statusLabels[row.status] ?? row.status}`,
+          items,
+          invoker,
+          `status/${row.status}`,
+        );
+      };
+      for (const row of chartData) {
+        registerDetails(
+          `status/${row.status}`,
+          `Action items: ${statusLabels[row.status] ?? row.status}`,
+          data.filter((item) => item.action_status === row.status).map(actionCard),
+        );
+      }
+      renderTable(
+        "actions-data",
+        [
+          {
+            label: "Status",
+            value: (row) => statusLabels[row.status] ?? row.status,
+          },
+          { label: "Actions", value: (row) => row.count },
+        ],
+        chartData,
+        {
+          heading: "Action items",
+          label: (row) => `View ${statusLabels[row.status] ?? row.status}`,
+          select: selectStatus,
+        },
+      );
 
       const plot = Plot.plot({
         ...chartOptions(
@@ -1013,17 +1544,23 @@
       });
 
       mountChart("actions-chart", plot);
-      addFocusedClick(plot, ({ status }) => {
-        const matches = data.filter((d) => d.action_status === status);
-        showDetails(
-          `Action items: ${statusLabels[status] ?? status}`,
-          matches.map(actionCard),
-        );
-      });
+      addFocusedClick(plot, (row) => selectStatus(row, plot));
     }
 
     async function renderActionsBySprint() {
       const data = await fetchJSON("/api/action-status-by-sprint");
+      renderTable(
+        "actions-sprint-data",
+        [
+          { label: "Sprint", value: (row) => row.sprint },
+          {
+            label: "Status",
+            value: (row) => statusLabels[row.status] ?? row.status,
+          },
+          { label: "Actions", value: (row) => row.count },
+        ],
+        data,
+      );
 
       const plot = Plot.plot({
         ...chartOptions(
@@ -1079,47 +1616,127 @@
       mountChart("actions-sprint-chart", plot);
     }
 
-    // --- Quotes ---
+    // --- Representative updates ---
 
-    async function renderQuotes() {
+    async function renderSignals() {
       const data = await fetchJSON("/api/sentiment-trends");
 
-      const positive = data.filter((d) => d.sentiment === "positive").sort(() =>
-        Math.random() - 0.5
-      ).slice(0, 2);
-      const negative = data.filter((d) => d.sentiment === "negative").sort(() =>
-        Math.random() - 0.5
-      ).slice(0, 2);
+      const newest = (sentiment) =>
+        data.filter((item) => item.sentiment === sentiment).sort((a, b) =>
+          Number(b.ts) - Number(a.ts)
+        ).slice(0, 2);
+      const items = [...newest("negative"), ...newest("positive")].sort((a, b) =>
+        Number(b.ts) - Number(a.ts)
+      );
 
-      const items = [...positive, ...negative].sort(() => Math.random() - 0.5);
-
-      document.getElementById("quotes").replaceChildren(...items.map(updateCard));
+      document.getElementById("signals-count").textContent = `(${items.length})`;
+      document.getElementById("signals").replaceChildren(...items.map(updateCard));
     }
 
     // --- Action list ---
 
     async function renderActionList() {
-      const data = await fetchJSON("/api/action-status");
+      const actions = [...await fetchJSON("/api/action-status")].reverse();
+      const list = document.getElementById("action-list");
+      const toggle = document.getElementById("action-list-toggle");
+      const visibleLimit = 5;
+      let expanded = false;
 
-      document.getElementById("action-list").replaceChildren(
-        ...data.map(actionCard),
-      );
+      document.getElementById("actions-count").textContent = `(${actions.length})`;
+
+      function renderList() {
+        const visibleActions = expanded ? actions : actions.slice(0, visibleLimit);
+        list.replaceChildren(...visibleActions.map(actionCard));
+        toggle.textContent = expanded
+          ? "Show fewer"
+          : `Show all ${actions.length} actions`;
+        toggle.setAttribute("aria-expanded", String(expanded));
+      }
+
+      toggle.hidden = actions.length <= visibleLimit;
+      toggle.addEventListener("click", () => {
+        expanded = !expanded;
+        renderList();
+      });
+      renderList();
     }
 
-    // --- Detail panel ---
+    // --- Supporting-evidence inspector ---
 
-    function showDetails(title, items) {
-      const panel = document.getElementById("detail-panel");
-      const content = document.getElementById("detail-content");
-      panel.style.display = "block";
-      content.replaceChildren(
-        element("h3", { text: title }),
+    const appShell = document.getElementById("app-shell");
+    const detailInspector = document.getElementById("detail-inspector");
+    const detailTitle = document.getElementById("detail-title");
+    const detailContent = document.getElementById("detail-content");
+    let detailInvoker = null;
+
+    function registerDetails(token, title, items) {
+      detailRegistry.set(token, { title, items });
+    }
+
+    function detailHash(token) {
+      const separator = token.indexOf("/");
+      const kind = token.slice(0, separator);
+      const value = token.slice(separator + 1);
+      return `#${activeView}/${kind}/${encodeURIComponent(value)}`;
+    }
+
+    function showDetails(title, items, invoker, token, options = {}) {
+      const { updateLocation = true, focus = true } = options;
+      detailInvoker = invoker ?? detailInvoker;
+      detailTitle.textContent = title;
+      detailContent.replaceChildren(
         ...(items.length
           ? items
           : [element("p", { text: "No matching items found." })]),
       );
-      panel.scrollIntoView({ behavior: "smooth" });
+      detailInspector.hidden = false;
+      appShell.classList.add("has-inspector");
+      if (updateLocation && token && location.hash !== detailHash(token)) {
+        history.pushState(null, "", detailHash(token));
+      }
+      if (focus) {
+        detailTitle.focus();
+        if (matchMedia("(max-width: 900px)").matches) {
+          detailInspector.scrollIntoView({ block: "start" });
+        }
+      }
     }
+
+    function restoreDetail(token) {
+      const details = detailRegistry.get(token);
+      if (details) {
+        showDetails(details.title, details.items, null, token, {
+          updateLocation: false,
+          focus: false,
+        });
+      } else {
+        hideDetails({ restoreFocus: false, updateLocation: true });
+      }
+    }
+
+    function hideDetails(options = {}) {
+      const { restoreFocus = true, updateLocation = true } = options;
+      detailInspector.hidden = true;
+      appShell.classList.remove("has-inspector");
+      if (updateLocation && location.hash !== `#${activeView}`) {
+        history.replaceState(null, "", `#${activeView}`);
+      }
+      if (
+        restoreFocus && detailInvoker &&
+        detailInvoker.isConnected &&
+        typeof detailInvoker.focus === "function"
+      ) {
+        detailInvoker.focus({ preventScroll: true });
+      } else if (restoreFocus) {
+        document.querySelector(`#${activeView} h2`).focus({ preventScroll: true });
+      }
+      detailInvoker = null;
+    }
+
+    document.getElementById("detail-close").addEventListener(
+      "click",
+      () => hideDetails(),
+    );
 
     async function renderStartupStatus() {
       const health = await fetchJSON("/api/health");
@@ -1166,23 +1783,58 @@
       return true;
     }
 
-    // --- Render all ---
+    // --- View rendering and responsive charts ---
+
+    const renderedViews = new Set();
+    let dashboardReady = false;
+    const viewRenderers = {
+      overview: () =>
+        Promise.all([renderSummary(), renderInsights(), renderSignals()]),
+      sentiment: () => Promise.all([renderSentiment(), renderSentimentBySprint()]),
+      "themes-blockers": () => Promise.all([renderThemes(), renderBlockers()]),
+      "follow-through": () =>
+        Promise.all([
+          renderActions(),
+          renderActionsBySprint(),
+          renderActionList(),
+        ]),
+    };
+    const chartRenderers = {
+      sentiment: viewRenderers.sentiment,
+      "themes-blockers": viewRenderers["themes-blockers"],
+      "follow-through": () =>
+        Promise.all([renderActions(), renderActionsBySprint()]),
+    };
+
+    async function renderView(view) {
+      if (!dashboardReady || renderedViews.has(view)) return;
+      await viewRenderers[view]();
+      renderedViews.add(view);
+    }
+
+    let resizeTimer;
+    let renderedWidth = 0;
+    const viewResizeObserver = new ResizeObserver(([entry]) => {
+      const nextWidth = Math.round(entry.contentRect.width);
+      if (!dashboardReady || Math.abs(nextWidth - renderedWidth) < 2) return;
+      renderedWidth = nextWidth;
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(async () => {
+        if (renderedViews.has(activeView) && chartRenderers[activeView]) {
+          await chartRenderers[activeView]();
+          const { detail } = routeFromHash();
+          if (detail) restoreDetail(detail);
+        }
+      }, 120);
+    });
+    viewResizeObserver.observe(document.getElementById("view-stage"));
 
     try {
       const canRender = await renderStartupStatus();
       if (!canRender) throw new Error("The database is unavailable.");
-      await Promise.all([
-        renderSummary(),
-        renderInsights(),
-        renderSentiment(),
-        renderSentimentBySprint(),
-        renderThemes(),
-        renderBlockers(),
-        renderActions(),
-        renderActionsBySprint(),
-        renderQuotes(),
-        renderActionList(),
-      ]);
+      dashboardReady = true;
+      if (!location.hash) history.replaceState(null, "", "#overview");
+      await activateRoute();
     } catch (error) {
       console.error(error);
       const alert = element("p", {
