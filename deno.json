@@ -8,7 +8,12 @@
     "app": "deno run --allow-all tasks/run_desktop.ts",
     "bundle": "deno desktop --allow-all --output=sprintlens --include=index.html --include=data desktop.ts",
     "generate": "deno run --allow-all tasks/generate_synthetic.ts",
-    "pipeline": "deno task setup && deno task load && deno task analyse && deno task app"
+    "pipeline": "deno task setup && deno task load && deno task analyse && deno task app",
+    "build": "deno compile --allow-all --output=./sprintlens src/main.ts",
+    "build:linux": "deno compile --allow-all --target=x86_64-unknown-linux-gnu --output=./sprintlens src/main.ts",
+    "build:mac": "deno compile --allow-all --target=x86_64-apple-darwin --output=./sprintlens src/main.ts",
+    "build:windows": "deno compile --allow-all --target=x86_64-pc-windows-msvc --output=./sprintlens.exe src/main.ts",
+    "build:all": "deno compile --allow-all --target=x86_64-unknown-linux-gnu --output=./sprintlens-linux src/main.ts && deno compile --allow-all --target=x86_64-apple-darwin --output=./sprintlens-mac src/main.ts && deno compile --allow-all --target=x86_64-pc-windows-msvc --output=./sprintlens.exe src/main.ts"
   },
   "nodeModulesDir": "auto",
   "imports": {
