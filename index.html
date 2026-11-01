@@ -5,23 +5,133 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SprintLens</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6.17/dist/plot.umd.min.js"></script>
+  <script>
+    try {
+      const savedTheme = localStorage.getItem("sprintlens-theme");
+      document.documentElement.dataset.theme = savedTheme ||
+        (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    } catch {
+      document.documentElement.dataset.theme = "light";
+    }
+  </script>
   <style>
-    :root { --primary: #2a9d8f; --pico-card-background-color: #fff; }
-    body { padding-top: 2rem; padding-bottom: 4rem; }
-    .stat-card { text-align: center; }
-    .stat-card .value { font-size: 2rem; font-weight: 700; color: var(--primary); }
-    .stat-card .label { font-size: 0.85rem; color: var(--pico-muted-color); }
-    .legend { display: flex; gap: 1rem; align-items: center; justify-content: center; margin-top: 0.5rem; flex-wrap: wrap; }
-    .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 17px; }
-    .legend-swatch { width: 16px; height: 16px; border-radius: 3px; }
-    .clickable-bar { cursor: pointer; }
-    .clickable-bar:hover { opacity: 0.8; }
-    #detail-panel { margin-top: 2rem; }
+    :root {
+      --primary: #168578;
+      --accent-soft: #e0f3f0;
+      --app-background: #f4f7f8;
+      --surface: #ffffff;
+      --surface-raised: #ffffff;
+      --surface-muted: #eef3f4;
+      --border: #dbe4e6;
+      --chart-grid: #d9e2e4;
+      --text-strong: #17252a;
+      --shadow: 0 1px 2px rgb(20 40 48 / 6%), 0 10px 30px rgb(20 40 48 / 5%);
+      --pico-primary: var(--primary);
+      --pico-card-background-color: var(--surface);
+      --pico-card-border-color: var(--border);
+      color-scheme: light;
+    }
+    :root[data-theme="dark"] {
+      --primary: #55c8b8;
+      --accent-soft: #173f3b;
+      --app-background: #0d1519;
+      --surface: #142126;
+      --surface-raised: #19282e;
+      --surface-muted: #203138;
+      --border: #2b3d44;
+      --chart-grid: #34474e;
+      --text-strong: #edf7f6;
+      --shadow: 0 1px 2px rgb(0 0 0 / 20%), 0 14px 36px rgb(0 0 0 / 18%);
+      --pico-primary: var(--primary);
+      --pico-card-background-color: var(--surface);
+      --pico-card-border-color: var(--border);
+      color-scheme: dark;
+    }
+    body {
+      min-height: 100vh;
+      padding: 0 0 4rem;
+      background:
+        radial-gradient(circle at 15% -10%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 32rem),
+        var(--app-background);
+    }
+    main.container { padding-top: 1.5rem; }
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand h1 { margin: 0; color: var(--text-strong); letter-spacing: -0.035em; }
+    .brand p { margin: 0.25rem 0 0; color: var(--pico-muted-color); }
+    .theme-toggle {
+      display: inline-flex;
+      width: auto;
+      min-width: 7.25rem;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      margin: 0;
+      padding: 0.5rem 0.8rem;
+      border-color: var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--text-strong);
+      box-shadow: var(--shadow);
+      font-size: 0.82rem;
+    }
+    .theme-toggle:hover { background: var(--surface-muted); }
+    section { margin-bottom: 2rem; }
+    section > h2 { margin-bottom: 0.8rem; color: var(--text-strong); }
+    article {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    article h2, article h3 { color: var(--text-strong); }
+    .stat-card { position: relative; overflow: hidden; text-align: left; }
+    .stat-card::before {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 3px;
+      background: var(--primary);
+      content: "";
+    }
+    .stat-card .value {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 750;
+      line-height: 1.1;
+      color: var(--primary);
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-card .label { margin-top: 0.35rem; font-size: 0.82rem; color: var(--pico-muted-color); }
+    #insights { border-left: 3px solid var(--primary); background: var(--surface-raised); }
+    #insights p { margin: 0; font-size: 1.02rem; line-height: 1.7; }
+    .chart { min-height: 280px; }
+    .chart figure { margin: 0; }
+    .chart svg { overflow: visible; }
+    .chart svg text { fill: currentColor; }
+    .chart svg [aria-label*="grid"] { color: var(--chart-grid); }
+    .chart svg g[aria-label="tip"] path { fill: var(--surface-raised); stroke: var(--border); }
+    .clickable-bar { cursor: pointer; transition: opacity 120ms ease; }
+    .clickable-bar:hover { opacity: 0.82; }
+    #quotes, #action-list, #detail-content { display: grid; gap: 0.85rem; }
+    #quotes article, #action-list article, #detail-content article { margin: 0; box-shadow: none; }
+    #detail-panel {
+      margin-top: 2rem;
+      padding: 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface-muted);
+    }
     #detail-panel article { margin-bottom: 1rem; }
-    .quote { font-style: italic; border-left: 3px solid var(--primary); padding-left: 1rem; margin: 0.5rem 0; }
-    .tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 12px; font-size: 0.85rem; margin-right: 0.4rem; }
+    .quote { border-left: 3px solid var(--primary); padding-left: 1rem; margin: 0.65rem 0 0; line-height: 1.6; }
+    .tag { display: inline-block; padding: 0.18rem 0.55rem; border-radius: 999px; font-size: 0.85rem; font-weight: 650; letter-spacing: 0.01em; margin-right: 0.4rem; }
     .tag-positive { background: #e8f5f3; color: #1d7a6e; }
     .tag-negative { background: #fdecea; color: #c0392b; }
     .tag-neutral { background: #f0f0f0; color: #555; }
@@ -29,18 +139,47 @@
     .tag-partial { background: #fff4db; color: #b38600; }
     .tag-not_done { background: #fdecea; color: #c0392b; }
     .tag-dropped { background: #f0f0f0; color: #777; }
-
-    /* Plot typography overrides — maximise readability */
-    svg text { font-size: 15px !important; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif !important; }
-    svg .axis text { font-size: 14px !important; }
-    svg .axis label { font-size: 16px !important; font-weight: 600 !important; }
-    svg .grid line { stroke-opacity: 0.3; }
+    [data-theme="dark"] .tag-positive,
+    [data-theme="dark"] .tag-done { background: #173f3b; color: #7bd8cb; }
+    [data-theme="dark"] .tag-negative,
+    [data-theme="dark"] .tag-not_done { background: #482721; color: #ff9f8c; }
+    [data-theme="dark"] .tag-neutral,
+    [data-theme="dark"] .tag-dropped { background: #29373d; color: #c1cdd1; }
+    [data-theme="dark"] .tag-partial { background: #493b1d; color: #f2d27c; }
+    @media (max-width: 576px) {
+      .app-header { align-items: flex-start; }
+      .brand p { max-width: 18rem; }
+      .theme-toggle { min-width: auto; }
+      .theme-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+    }
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      border: 0;
+    }
   </style>
 </head>
 <body>
   <main class="container">
-    <h1>🏃🔍 SprintLens</h1>
-    <p class="pico-color-jade-500">Sprint ceremony effectiveness — backed by data</p>
+    <header class="app-header">
+      <div class="brand">
+        <h1>🏃🔍 SprintLens</h1>
+        <p>Sprint ceremony effectiveness — backed by data</p>
+      </div>
+      <button class="outline theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode">
+        <span id="theme-icon" aria-hidden="true">☾</span>
+        <span class="theme-label" id="theme-label">Dark mode</span>
+      </button>
+    </header>
 
     <section id="summary"></section>
 
@@ -53,14 +192,13 @@
       <div>
         <article>
           <h3>Sentiment over time</h3>
-          <div id="sentiment-chart"></div>
-          <div class="legend" id="sentiment-legend"></div>
+          <div class="chart" id="sentiment-chart"></div>
         </article>
       </div>
       <div>
         <article>
           <h3>Sentiment by sprint</h3>
-          <div id="sentiment-sprint-chart"></div>
+          <div class="chart" id="sentiment-sprint-chart"></div>
         </article>
       </div>
     </section>
@@ -69,15 +207,15 @@
       <div>
         <article>
           <h3>Recurring themes</h3>
-          <p>Click a bar to see related updates.</p>
-          <div id="themes-chart"></div>
+          <p id="themes-summary">Hover for an exact value; click for related updates.</p>
+          <div class="chart" id="themes-chart"></div>
         </article>
       </div>
       <div>
         <article>
           <h3>Recurring blockers</h3>
-          <p>Click a bar to see related updates.</p>
-          <div id="blockers-chart"></div>
+          <p id="blockers-summary">Hover for an exact value; click for related updates.</p>
+          <div class="chart" id="blockers-chart"></div>
         </article>
       </div>
     </section>
@@ -86,15 +224,13 @@
       <div>
         <article>
           <h3>Action item follow-through</h3>
-          <div id="actions-chart"></div>
-          <div class="legend" id="actions-legend"></div>
+          <div class="chart" id="actions-chart"></div>
         </article>
       </div>
       <div>
         <article>
           <h3>Action follow-through by sprint</h3>
-          <div id="actions-sprint-chart"></div>
-          <div class="legend" id="actions-sprint-legend"></div>
+          <div class="chart" id="actions-sprint-chart"></div>
         </article>
       </div>
     </section>
@@ -113,6 +249,7 @@
       <h2>Details</h2>
       <div id="detail-content"></div>
     </section>
+    <p class="visually-hidden" id="zoom-announcement" role="status" aria-live="polite"></p>
   </main>
 
   <script type="module">
@@ -133,9 +270,125 @@
       dropped: "Dropped",
     };
 
-    async function fetchJSON(path) {
-      const res = await fetch(path);
-      return res.json();
+    const themeToggle = document.getElementById("theme-toggle");
+    const themeIcon = document.getElementById("theme-icon");
+    const themeLabel = document.getElementById("theme-label");
+
+    function updateThemeToggle() {
+      const isDark = document.documentElement.dataset.theme === "dark";
+      const nextTheme = isDark ? "light" : "dark";
+      themeIcon.textContent = isDark ? "☀" : "☾";
+      themeLabel.textContent = `${nextTheme[0].toUpperCase()}${nextTheme.slice(1)} mode`;
+      themeToggle.setAttribute("aria-label", `Switch to ${nextTheme} mode`);
+      themeToggle.setAttribute("aria-pressed", String(isDark));
+    }
+
+    themeToggle.addEventListener("click", () => {
+      const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = nextTheme;
+      try {
+        localStorage.setItem("sprintlens-theme", nextTheme);
+      } catch {
+        // The theme still applies for this session when storage is unavailable.
+      }
+      updateThemeToggle();
+    });
+    updateThemeToggle();
+
+    const zoomAnnouncement = document.getElementById("zoom-announcement");
+    const zoomStep = 0.1;
+    const minZoom = 0.75;
+    const maxZoom = 2;
+    let appZoom = 1;
+    try {
+      appZoom = Number(localStorage.getItem("sprintlens-zoom")) || 1;
+    } catch {
+      // Use the default scale when storage is unavailable.
+    }
+
+    function applyZoom(value, announce = true) {
+      appZoom = Math.min(maxZoom, Math.max(minZoom, Math.round(value * 10) / 10));
+      document.documentElement.style.zoom = String(appZoom);
+      try {
+        localStorage.setItem("sprintlens-zoom", String(appZoom));
+      } catch {
+        // The scale still applies for this session when storage is unavailable.
+      }
+      if (announce) zoomAnnouncement.textContent = `Zoom ${Math.round(appZoom * 100)} percent`;
+    }
+
+    applyZoom(appZoom, false);
+    addEventListener("keydown", event => {
+      if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+      if (["+", "=", "Add"].includes(event.key)) {
+        event.preventDefault();
+        applyZoom(appZoom + zoomStep);
+      } else if (["-", "_", "Subtract"].includes(event.key)) {
+        event.preventDefault();
+        applyZoom(appZoom - zoomStep);
+      } else if (event.key === "0") {
+        event.preventDefault();
+        applyZoom(1);
+      }
+    });
+
+    const requests = new Map();
+    const categoryLimit = 8;
+
+    function fetchJSON(path) {
+      if (!requests.has(path)) {
+        requests.set(path, fetch(path).then(res => {
+          if (!res.ok) throw new Error(`${path} returned ${res.status}`);
+          return res.json();
+        }));
+      }
+      return requests.get(path);
+    }
+
+    function countBy(data, keys) {
+      const groups = new Map();
+      for (const row of data) {
+        const values = keys.map(key => row[key]);
+        const id = JSON.stringify(values);
+        const group = groups.get(id) ?? Object.fromEntries(keys.map((key, i) => [key, values[i]]));
+        group.count = (group.count ?? 0) + 1;
+        groups.set(id, group);
+      }
+      return [...groups.values()];
+    }
+
+    function chartWidth(id) {
+      return Math.max(320, Math.floor(document.getElementById(id).clientWidth || 640));
+    }
+
+    function mountChart(id, plot) {
+      document.getElementById(id).replaceChildren(plot);
+    }
+
+    function chartOptions(id, ariaLabel, ariaDescription) {
+      return {
+        width: chartWidth(id),
+        height: 300,
+        marginLeft: 60,
+        marginBottom: 40,
+        ariaLabel,
+        ariaDescription,
+        style: {
+          fontSize: "15px",
+          fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+          overflow: "visible",
+          color: "var(--pico-color)",
+          background: "transparent",
+        },
+      };
+    }
+
+    function addFocusedClick(plot, callback) {
+      let focused = null;
+      plot.addEventListener("input", () => focused = plot.value);
+      plot.addEventListener("click", () => {
+        if (focused) callback(focused);
+      });
     }
 
     function tag(value, type) {
@@ -218,51 +471,73 @@
         d.dateLabel = date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
       });
 
+      const chartData = countBy(data, ["dateLabel", "sentiment"]);
+
       const plot = Plot.plot({
-        style: "font-size: 15px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;",
+        ...chartOptions(
+          "sentiment-chart",
+          "Sentiment over time",
+          "Stacked bars show the number of positive, neutral, and negative updates on each date.",
+        ),
         marginBottom: 80,
-        marginLeft: 60,
         x: { type: "band", label: "Date", tickRotate: -45, tickPadding: 8, tickSize: 8 },
-        y: { label: "Count", tickPadding: 10, tickSize: 8 },
-        color: { range: [colours.negative, colours.neutral, colours.positive] },
+        y: { label: "Updates", grid: true, nice: true, tickPadding: 10, tickSize: 8 },
+        color: {
+          domain: ["positive", "neutral", "negative"],
+          range: [colours.positive, colours.neutral, colours.negative],
+          legend: true,
+        },
         marks: [
-          Plot.barY(
-            data,
-            Plot.groupX(
-              { y: "count" },
-              { x: "dateLabel", fill: "sentiment" },
-            ),
-          ),
+          Plot.ruleY([0], { ariaHidden: true }),
+          Plot.barY(chartData, {
+            x: "dateLabel",
+            y: "count",
+            fill: "sentiment",
+            channels: {
+              Date: "dateLabel",
+              Sentiment: "sentiment",
+              Updates: "count",
+            },
+            tip: { pointer: "x", format: { Date: true, Sentiment: true, Updates: true, x: false, y: false, fill: false } },
+            ariaLabel: d => `${d.dateLabel}: ${d.count} ${d.sentiment} update${d.count === 1 ? "" : "s"}`,
+          }),
         ],
       });
 
-      document.getElementById("sentiment-chart").appendChild(plot);
-
-      const legend = document.getElementById("sentiment-legend");
-      legend.innerHTML = ["positive", "neutral", "negative"].map(s => `
-        <div class="legend-item">
-          <div class="legend-swatch" style="background:${colours[s]}"></div>
-          <span>${s}</span>
-        </div>
-      `).join("");
+      mountChart("sentiment-chart", plot);
     }
 
     async function renderSentimentBySprint() {
       const data = await fetchJSON("/api/sentiment-by-sprint");
 
       const plot = Plot.plot({
-        style: "font-size: 15px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;",
+        ...chartOptions(
+          "sentiment-sprint-chart",
+          "Sentiment by sprint",
+          "Bars compare positive, neutral, and negative update counts for each sprint.",
+        ),
         marginBottom: 80,
-        marginLeft: 60,
         x: { type: "band", label: "Sprint", tickPadding: 8, tickSize: 8 },
-        y: { label: "Count", tickPadding: 10, tickSize: 8 },
-        color: { range: [colours.negative, colours.neutral, colours.positive] },
+        y: { label: "Updates", grid: true, nice: true, tickPadding: 10, tickSize: 8 },
+        color: {
+          domain: ["positive", "neutral", "negative"],
+          range: [colours.positive, colours.neutral, colours.negative],
+          legend: true,
+        },
         marks: [
-          Plot.barY(data, { x: "sprint", y: "count", fill: "sentiment" }),
+          Plot.ruleY([0], { ariaHidden: true }),
+          Plot.barY(data, {
+            x: "sprint",
+            y: "count",
+            fill: "sentiment",
+            channels: { Sprint: "sprint", Sentiment: "sentiment", Updates: "count" },
+            tip: { pointer: "x", format: { Sprint: true, Sentiment: true, Updates: true, x: false, y: false, fill: false } },
+            ariaLabel: d => `${d.sprint}: ${d.count} ${d.sentiment} update${d.count === 1 ? "" : "s"}`,
+          }),
         ],
       });
 
-      document.getElementById("sentiment-sprint-chart").appendChild(plot);
+      mountChart("sentiment-sprint-chart", plot);
     }
 
     // --- Themes / blockers (interactive) ---
@@ -270,23 +545,36 @@
     async function renderThemes() {
       const data = await fetchJSON("/api/themes");
       const raw = await fetchJSON("/api/sentiment-trends");
+      const visibleData = data.slice(0, categoryLimit);
+      document.getElementById("themes-summary").textContent =
+        `Top ${visibleData.length} of ${data.length} themes. Hover for an exact value; click for related updates.`;
 
       const plot = Plot.plot({
-        style: "font-size: 15px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;",
+        ...chartOptions(
+          "themes-chart",
+          "Recurring themes",
+          "Horizontal bars rank themes by the number of updates in which each theme appears.",
+        ),
         marginLeft: 160,
-        marginBottom: 40,
-        x: { label: "Frequency", tickPadding: 10, tickSize: 8 },
-        y: { label: null },
         marks: [
-          Plot.barX(data, { x: "count", y: "theme", fill: "#457b9d", sort: { y: "-x" }, className: "clickable-bar" }),
+          Plot.ruleX([0], { ariaHidden: true }),
+          Plot.barX(visibleData, {
+            x: "count",
+            y: "theme",
+            fill: "#457b9d",
+            sort: { y: "-x" },
+            className: "clickable-bar",
+            channels: { Theme: "theme", Updates: "count" },
+            tip: { pointer: "y", format: { Theme: true, Updates: true, x: false, y: false } },
+            ariaLabel: d => `${d.theme}: ${d.count} update${d.count === 1 ? "" : "s"}`,
+          }),
         ],
+        x: { label: "Updates", grid: true, nice: true, tickPadding: 10, tickSize: 8 },
+        y: { label: null },
       });
 
-      document.getElementById("themes-chart").appendChild(plot);
-
-      plot.querySelectorAll(".clickable-bar").forEach((bar, i) => {
-        bar.addEventListener("click", () => {
-          const theme = data[i].theme;
+      mountChart("themes-chart", plot);
+      addFocusedClick(plot, ({ theme }) => {
           const matches = raw.filter(d => d.themes && d.themes.includes(theme));
           showDetails(`Updates mentioning "${theme}"`, matches.map(d => `
             <article>
@@ -294,30 +582,42 @@
               <div class="quote">${d.text}</div>
             </article>
           `).join(""));
-        });
       });
     }
 
     async function renderBlockers() {
       const data = await fetchJSON("/api/blockers");
       const raw = await fetchJSON("/api/sentiment-trends");
+      const visibleData = data.slice(0, categoryLimit);
+      document.getElementById("blockers-summary").textContent =
+        `Top ${visibleData.length} of ${data.length} blockers. Hover for an exact value; click for related updates.`;
 
       const plot = Plot.plot({
-        style: "font-size: 15px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;",
+        ...chartOptions(
+          "blockers-chart",
+          "Recurring blockers",
+          "Horizontal bars rank blockers by the number of updates in which each blocker appears.",
+        ),
         marginLeft: 160,
-        marginBottom: 40,
-        x: { label: "Frequency", tickPadding: 10, tickSize: 8 },
-        y: { label: null },
         marks: [
-          Plot.barX(data, { x: "count", y: "blocker", fill: "var(--pico-color-grey-500)", sort: { y: "-x" }, className: "clickable-bar" }),
+          Plot.ruleX([0], { ariaHidden: true }),
+          Plot.barX(visibleData, {
+            x: "count",
+            y: "blocker",
+            fill: "var(--pico-color-grey-500)",
+            sort: { y: "-x" },
+            className: "clickable-bar",
+            channels: { Blocker: "blocker", Updates: "count" },
+            tip: { pointer: "y", format: { Blocker: true, Updates: true, x: false, y: false } },
+            ariaLabel: d => `${d.blocker}: ${d.count} update${d.count === 1 ? "" : "s"}`,
+          }),
         ],
+        x: { label: "Updates", grid: true, nice: true, tickPadding: 10, tickSize: 8 },
+        y: { label: null },
       });
 
-      document.getElementById("blockers-chart").appendChild(plot);
-
-      plot.querySelectorAll(".clickable-bar").forEach((bar, i) => {
-        bar.addEventListener("click", () => {
-          const blocker = data[i].blocker;
+      mountChart("blockers-chart", plot);
+      addFocusedClick(plot, ({ blocker }) => {
           const matches = raw.filter(d => d.blockers && d.blockers.includes(blocker));
           showDetails(`Updates mentioning blocker "${blocker}"`, matches.map(d => `
             <article>
@@ -325,7 +625,6 @@
               <div class="quote">${d.text}</div>
             </article>
           `).join(""));
-        });
       });
     }
 
@@ -342,17 +641,27 @@
       const chartData = Object.entries(counts).map(([status, count]) => ({ status, count }));
 
       const plot = Plot.plot({
-        style: "font-size: 15px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;",
-        marginBottom: 40,
-        marginLeft: 60,
-        x: { label: "Status", tickFormat: d => statusLabels[d] ?? d, tickPadding: 10, tickSize: 8 },
-        y: { label: "Count", tickPadding: 10, tickSize: 8 },
+        ...chartOptions(
+          "actions-chart",
+          "Action item follow-through",
+          "Bars show the number of action items in each follow-through status.",
+        ),
+        color: {
+          domain: ["done", "partial", "not_done", "dropped"],
+          range: [colours.done, colours.partial, colours.not_done, colours.dropped],
+          legend: true,
+          tickFormat: d => statusLabels[d] ?? d,
+        },
         marks: [
+          Plot.ruleY([0], { ariaHidden: true }),
           Plot.barY(chartData, {
             x: "status",
             y: "count",
-            fill: d => colours[d.status] ?? "#999",
+            fill: "status",
             className: "clickable-bar",
+            channels: { Status: d => statusLabels[d.status] ?? d.status, Actions: "count" },
+            tip: { pointer: "x", format: { Status: true, Actions: true, x: false, y: false } },
+            ariaLabel: d => `${statusLabels[d.status] ?? d.status}: ${d.count} action${d.count === 1 ? "" : "s"}`,
           }),
           Plot.text(chartData, {
             x: "status",
@@ -361,21 +670,12 @@
             text: d => d.count,
           }),
         ],
+        x: { label: "Status", tickFormat: d => statusLabels[d] ?? d, tickPadding: 10, tickSize: 8 },
+        y: { label: "Actions", grid: true, nice: true, tickPadding: 10, tickSize: 8 },
       });
 
-      document.getElementById("actions-chart").appendChild(plot);
-
-      const actionsLegend = document.getElementById("actions-legend");
-      actionsLegend.innerHTML = Object.entries(statusLabels).map(([status, label]) => `
-        <div class="legend-item">
-          <div class="legend-swatch" style="background:${colours[status]}"></div>
-          <span>${label}</span>
-        </div>
-      `).join("");
-
-      plot.querySelectorAll(".clickable-bar").forEach((bar, i) => {
-        bar.addEventListener("click", () => {
-          const status = chartData[i].status;
+      mountChart("actions-chart", plot);
+      addFocusedClick(plot, ({ status }) => {
           const matches = data.filter(d => d.action_status === status);
           showDetails(`Action items: ${statusLabels[status]}`, matches.map(d => `
             <article>
@@ -383,7 +683,6 @@
               <div class="quote">${d.text}</div>
             </article>
           `).join(""));
-        });
       });
     }
 
@@ -391,26 +690,38 @@
       const data = await fetchJSON("/api/action-status-by-sprint");
 
       const plot = Plot.plot({
-        style: "font-size: 15px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;",
+        ...chartOptions(
+          "actions-sprint-chart",
+          "Action follow-through by sprint",
+          "Bars compare action item status counts within each sprint.",
+        ),
         marginBottom: 80,
-        marginLeft: 60,
         x: { type: "band", label: "Sprint", tickPadding: 8, tickSize: 8 },
-        y: { label: "Count", tickPadding: 10, tickSize: 8 },
-        color: { range: [colours.dropped, colours.done, colours.partial, colours.not_done] },
+        y: { label: "Actions", grid: true, nice: true, tickPadding: 10, tickSize: 8 },
+        color: {
+          domain: ["done", "partial", "not_done", "dropped"],
+          range: [colours.done, colours.partial, colours.not_done, colours.dropped],
+          legend: true,
+          tickFormat: d => statusLabels[d] ?? d,
+        },
         marks: [
-          Plot.barY(data, { x: "sprint", y: "count", fill: "status" }),
+          Plot.ruleY([0], { ariaHidden: true }),
+          Plot.barY(data, {
+            x: "sprint",
+            y: "count",
+            fill: "status",
+            channels: {
+              Sprint: "sprint",
+              Status: d => statusLabels[d.status] ?? d.status,
+              Actions: "count",
+            },
+            tip: { pointer: "x", format: { Sprint: true, Status: true, Actions: true, x: false, y: false, fill: false } },
+            ariaLabel: d => `${d.sprint}, ${statusLabels[d.status] ?? d.status}: ${d.count} action${d.count === 1 ? "" : "s"}`,
+          }),
         ],
       });
 
-      document.getElementById("actions-sprint-chart").appendChild(plot);
-
-      const actionsSprintLegend = document.getElementById("actions-sprint-legend");
-      actionsSprintLegend.innerHTML = Object.entries(statusLabels).map(([status, label]) => `
-        <div class="legend-item">
-          <div class="legend-swatch" style="background:${colours[status]}"></div>
-          <span>${label}</span>
-        </div>
-      `).join("");
+      mountChart("actions-sprint-chart", plot);
     }
 
     // --- Quotes ---
@@ -458,16 +769,24 @@
 
     // --- Render all ---
 
-    await renderSummary();
-    await renderInsights();
-    await renderSentiment();
-    await renderSentimentBySprint();
-    await renderThemes();
-    await renderBlockers();
-    await renderActions();
-    await renderActionsBySprint();
-    await renderQuotes();
-    await renderActionList();
+    try {
+      await Promise.all([
+        renderSummary(),
+        renderInsights(),
+        renderSentiment(),
+        renderSentimentBySprint(),
+        renderThemes(),
+        renderBlockers(),
+        renderActions(),
+        renderActionsBySprint(),
+        renderQuotes(),
+        renderActionList(),
+      ]);
+    } catch (error) {
+      console.error(error);
+      document.getElementById("insights").innerHTML =
+        `<p role="alert">Dashboard data could not be loaded. ${error.message}</p>`;
+    }
   </script>
 </body>
 </html>

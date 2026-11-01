@@ -2,7 +2,7 @@ import { basename } from "@std/path";
 import { expandGlob } from "@std/fs";
 import { type DB, openDB } from "./db.ts";
 
-function parseTsv(text: string): Record<string, string>[] {
+export function parseTsv(text: string): Record<string, string>[] {
   const lines = text.trim().split("\n");
   const headers = lines[0].split("\t");
   return lines.slice(1).map((line) => {
@@ -11,32 +11,64 @@ function parseTsv(text: string): Record<string, string>[] {
   });
 }
 
+export type SlackThread = {
+  thread_ts: string;
+  replies: { author: string; text: string; ts: string }[];
+};
+
+export function parseSlackThread(text: string): SlackThread {
+  return JSON.parse(text) as SlackThread;
+}
+
+export function replaceRetroItems(
+  db: DB,
+  retroName: string,
+  records: Record<string, string>[],
+): number {
+  db.prepare("DELETE FROM retro_item WHERE retro_name = ?").run(retroName);
+
+  const insert = db.prepare(
+    `INSERT INTO retro_item (note_id, retro_name, author_id, author, text, column_id, "column", rank, stack)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  );
+  for (const row of records) {
+    insert.run(
+      row.note_id,
+      retroName,
+      row.author_id,
+      row.author,
+      row.text,
+      row.column_id,
+      row.column,
+      parseInt(row.rank) || null,
+      row.stack,
+    );
+  }
+  return records.length;
+}
+
+export function replaceSlackUpdates(db: DB, threads: SlackThread[]): number {
+  db.prepare("DELETE FROM slack_update").run();
+  const insert = db.prepare(
+    "INSERT INTO slack_update (thread_ts, author, text, ts) VALUES (?, ?, ?, ?)",
+  );
+  let count = 0;
+  for (const thread of threads) {
+    for (const reply of thread.replies) {
+      insert.run(thread.thread_ts, reply.author, reply.text, reply.ts);
+      count++;
+    }
+  }
+  return count;
+}
+
 export async function loadRetros(db: DB, glob = "data/retros/*.csv") {
   for await (const file of expandGlob(glob)) {
     const retroName = basename(file.name, ".csv");
     const text = Deno.readTextFileSync(file.path);
     const records = parseTsv(text);
 
-    db.prepare("DELETE FROM retro_item WHERE retro_name = ?").run(retroName);
-
-    const insert = db.prepare(
-      `INSERT INTO retro_item (note_id, retro_name, author_id, author, text, column_id, "column", rank, stack)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    );
-
-    for (const row of records) {
-      insert.run(
-        row.note_id,
-        retroName,
-        row.author_id,
-        row.author,
-        row.text,
-        row.column_id,
-        row.column,
-        parseInt(row.rank) || null,
-        row.stack,
-      );
-    }
+    replaceRetroItems(db, retroName, records);
 
     const row = db.prepare(
       "SELECT count(*) AS cnt FROM retro_item WHERE retro_name = ?",
@@ -47,22 +79,13 @@ export async function loadRetros(db: DB, glob = "data/retros/*.csv") {
 }
 
 export async function loadSlack(db: DB, glob = "data/slack/*.json") {
-  db.prepare("DELETE FROM slack_update").run();
+  const threads: SlackThread[] = [];
   for await (const file of expandGlob(glob)) {
-    const thread: {
-      thread_ts: string;
-      replies: { author: string; text: string; ts: string }[];
-    } = JSON.parse(Deno.readTextFileSync(file.path));
-
-    const insert = db.prepare(
-      "INSERT INTO slack_update (thread_ts, author, text, ts) VALUES (?, ?, ?, ?)",
-    );
-
-    for (const reply of thread.replies) {
-      insert.run(thread.thread_ts, reply.author, reply.text, reply.ts);
-    }
+    const thread = parseSlackThread(Deno.readTextFileSync(file.path));
+    threads.push(thread);
     console.log(`Loaded ${file.name}: ${thread.replies.length} replies`);
   }
+  replaceSlackUpdates(db, threads);
 }
 
 if (import.meta.main) {
